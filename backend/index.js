@@ -15,14 +15,13 @@ dotenv.config()
 
 const PORT = process.env.PORT ;
 
-const url = 'mongodb://localhost:27017/chatApp';
+const url = 'mongodb://127.0.0.1:27017/chatApp';
 
 // Connect to MongoDB
 mongoose.connect(url, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
-
 const db = mongoose.connection;
 
 db.on('error', (error) => {
