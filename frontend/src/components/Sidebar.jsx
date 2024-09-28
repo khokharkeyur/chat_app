@@ -5,14 +5,14 @@
     import toast from 'react-hot-toast';
     import { useNavigate } from 'react-router-dom';
     import { useDispatch, useSelector } from 'react-redux';
-    import { setAuthUser, setOtherUsers } from '../redux/userSlice';
+    import { setAuthUser, setOtherUsers,setSelectedUser } from '../redux/userSlice';
+
 
     function Sidebar() {
 
         const [search, setSearch] = useState("")
         const {otherUsers,searchUser} = useSelector(store=>store.user);
         const dispatch = useDispatch();
-
         const naviget = useNavigate()
 
         const searchSubmitHandler = (e) => {
@@ -31,6 +31,7 @@
                 const res = await axios.get(`http://localhost:8080/api/user/logout`);
                 toast.success(res.data.message);
                 naviget('/login')
+                dispatch(setSelectedUser(null));
                 dispatch(setAuthUser(null))
             } catch (error) {
                 console.log(error);
@@ -38,7 +39,7 @@
         }
 
     return (
-        <div className='border-r border-slate-500 p-4 flex flex-col'>
+        <div className=' border-r border-slate-500 p-4 flex flex-col'>
         <form onSubmit={searchSubmitHandler} action="" className='flex items-center gap-2'>
             <input
                 value={search}

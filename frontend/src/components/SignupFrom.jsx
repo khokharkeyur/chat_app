@@ -32,7 +32,6 @@ function SignupForm() {
         toast.success(res.data.message);
         navigate("/login")
       }
-      console.log(res);
     } catch (error) {
       toast.error(error.response.data.message);
       console.log(error);

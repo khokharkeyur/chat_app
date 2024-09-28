@@ -6,6 +6,7 @@ function OtherUser({ user }) {
   const dispatch = useDispatch();
 
   const { selectedUser,onlineUsers } = useSelector((store) => store.user);
+  
   const isOnline = onlineUsers?.includes(user._id);
   
   const selectedUserHandler = (user) => {
@@ -25,7 +26,7 @@ function OtherUser({ user }) {
         </div>
         <div className="flex flex-col flex-1">
           <div className="flex gap-2 flex-1">
-            <p>{user?.fullName}</p>
+            <p>{user?.fullName||user?.name}</p>
           </div>
         </div>
       </div>

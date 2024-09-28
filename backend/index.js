@@ -6,12 +6,9 @@ import messageRoute from './routes/messageRoutes.js'
 import cors from "cors";
 import { app,server } from "./socket/socket.js";
 
-
 import cookieParser from 'cookie-parser'
 
-
 dotenv.config()
-
 
 const PORT = process.env.PORT ;
 
@@ -47,6 +44,7 @@ app.use(cookieParser())
 
 app.use("/api/user",userRoute)
 app.use("/api/message",messageRoute)
+app.use("/api/group",groupRouter)
 
 server.listen(PORT,()=>{
     console.log(`Server Start at port ${PORT}`);

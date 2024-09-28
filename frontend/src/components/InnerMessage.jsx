@@ -6,14 +6,12 @@ function InnerMessage({ message }) {
   const chatRef = useRef();
   const {authUser,selectedUser} = useSelector(store=>store.user);
 
+  const createdAt = new Date(message.createdAt);
+const formattedTime = createdAt.toTimeString().split(' ')[0];
+  
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
-
-  // const handleDeleteMessage =()=>{
-  //   console.log("click");
-  //   console.log(message?._id);
-  // }
 
 
   return (
@@ -27,7 +25,7 @@ function InnerMessage({ message }) {
         </div>
       </div>
       <div className="chat-header">
-        <time className="text-xs opacity-50">12:45</time>
+        <time className="text-xs opacity-50">{formattedTime}</time>
       </div>
       <div  className={`chat-bubble ${message?.senderId !== authUser?._id ? 'bg-gray-200 text-black' : ''} `}>{message?.message} </div>
     </div>
