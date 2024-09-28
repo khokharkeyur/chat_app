@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import userRoute from './routes/userRoutes.js'
 import messageRoute from './routes/messageRoutes.js'
+import groupRouter from './routes/groupRoutes.js'
 import cors from "cors";
 import { app,server } from "./socket/socket.js";
 
