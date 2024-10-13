@@ -17,7 +17,7 @@ function OtherUser({ user }) {
     <div>
       <div
         onClick={() => selectedUserHandler(user)}
-        className={`${selectedUser?._id === user?._id ? 'bg-zinc-200 text-black ' : ''} flex gap-2 hover:text-black items-center hover:bg-zinc-200 rounded p-2 cursor-pointer`}
+        className={`${selectedUser?._id === user?._id ? 'bg-zinc-200 text-black ' : ''} flex gap-2 hover:text-black items-center hover:bg-slate-300 rounded p-2 cursor-pointer`}
       >
         <div className={`avatar ${isOnline ? "online":''}`}>
           <div className="w-12 rounded-full">
