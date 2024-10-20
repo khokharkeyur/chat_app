@@ -50,6 +50,34 @@ export const deleteGroup = async (req, res) => {
     }
 };
 
+
+export const removeMemberFromGroup = async (req, res) => {
+    try {
+        const { groupId, memberId } = req.params;
+
+        if (!groupId || !memberId) {
+            return res.status(400).json({ message: 'Group ID and Member ID are required' });
+        }
+
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' });
+        }
+
+        group.members = group.members.filter(member => member.toString() !== memberId);
+
+        await group.save();
+
+        return res.status(200).json({
+            message: 'Member removed successfully',
+            group
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 export const getAllGroups = async (req, res) => {
     try {
         const groups = await Group.find().populate('members');

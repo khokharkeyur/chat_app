@@ -23,6 +23,9 @@ const userSlice = createSlice({
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
     },
+    updateSelectedUser: (state, action) => {
+      state.selectedUser = action.payload; // New action to update selectedUser
+    },
     // setSearchUser: (state, action) => {
     //   state.searchUser = action.payload;
     // },
@@ -32,6 +35,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setAuthUser, setOtherUsers, setSelectedUser,setOnlineUsers,setGroups } =
+export const { setAuthUser, setOtherUsers, setSelectedUser,setOnlineUsers,setGroups,updateSelectedUser } =
   userSlice.actions;
 export default userSlice.reducer;
