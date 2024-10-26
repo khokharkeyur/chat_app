@@ -2,7 +2,7 @@ import { Group } from '../models/groupModel.js';
 
 export const createGroup = async (req, res) => {
     try {
-        const { groupName, memberIds } = req.body;
+        const { groupName, memberIds,adminId  } = req.body;
         if (!groupName || !memberIds || !Array.isArray(memberIds)) {
             return res.status(400).json({ message: 'Group name and member IDs are required' });
         }
@@ -14,6 +14,7 @@ export const createGroup = async (req, res) => {
         const newGroup = await Group.create({
             name: groupName,
             members: memberIds,
+            admin: adminId,
             profilePhoto: groupProfilePhoto
         });
 

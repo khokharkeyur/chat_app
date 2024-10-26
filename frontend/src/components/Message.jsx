@@ -43,6 +43,7 @@ function Message() {
       const payload = {
         groupName: groupName,
         memberIds: groupMemberIds,
+        adminId: authUserId, 
       };
 
       axios.defaults.withCredentials = true;
@@ -172,7 +173,7 @@ function Message() {
                                 </p>
                               </div>
                               <button
-                                className="btn"
+                                  className={`btn ${selectedUser?.admin === authUser?._id ? '' : 'hidden'} ${selectedUser?.admin === member?._id ? 'hidden' : ''}`}
                                 onClick={() =>
                                   removeMemberFromGroup(
                                     selectedUser?._id,
@@ -181,6 +182,11 @@ function Message() {
                                 }
                               >
                                 remove member
+                              </button>
+                              <button
+                                  className={`btn ${selectedUser?.admin === authUser?._id ? 'hidden' : ''} ${selectedUser?.admin === member?._id ? '' : 'hidden'}`}
+                              >
+                               admin
                               </button>
                             </div>
                           ))}
