@@ -6,7 +6,7 @@ import useGetOtherUsers from "../hooks/useGetOtherUsers";
 import axios from "axios";
 import toast from "react-hot-toast";
 import deleteIcon from "../assets/delete.png";
-import { setGroups,updateSelectedUser  } from "../redux/userSlice"; 
+import { setGroups, updateSelectedUser } from "../redux/userSlice";
 
 function Message() {
   const { selectedUser, authUser, onlineUsers, otherUsers } = useSelector(
@@ -43,7 +43,7 @@ function Message() {
       const payload = {
         groupName: groupName,
         memberIds: groupMemberIds,
-        adminId: authUserId, 
+        adminId: authUserId,
       };
 
       axios.defaults.withCredentials = true;
@@ -88,23 +88,25 @@ function Message() {
         `http://localhost:8080/api/group/${groupId}/member/${memberId}`,
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
-      
+
       toast.success(response.data.message);
-      
+
       const updatedSelectedUser = {
         ...selectedUser,
-        members: selectedUser.members.filter(member => member._id !== memberId),
+        members: selectedUser.members.filter(
+          (member) => member._id !== memberId
+        ),
       };
-      
-      dispatch(updateSelectedUser(updatedSelectedUser)); 
-      
+
+      dispatch(updateSelectedUser(updatedSelectedUser));
     } catch (error) {
-      console.error('Error removing member:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to remove member';
+      console.error("Error removing member:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to remove member";
       toast.error(errorMessage);
     }
   };
@@ -173,7 +175,7 @@ function Message() {
                                 </p>
                               </div>
                               <button
-                                  className={`btn ${selectedUser?.admin === authUser?._id ? '' : 'hidden'} ${selectedUser?.admin === member?._id ? 'hidden' : ''}`}
+                                className={`btn ${selectedUser?.admin === authUser?._id ? "" : "hidden"} ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
                                 onClick={() =>
                                   removeMemberFromGroup(
                                     selectedUser?._id,
@@ -184,9 +186,9 @@ function Message() {
                                 remove member
                               </button>
                               <button
-                                  className={`btn ${selectedUser?.admin === authUser?._id ? 'hidden' : ''} ${selectedUser?.admin === member?._id ? '' : 'hidden'}`}
+                                className={`btn ${selectedUser?.admin === authUser?._id ? "hidden" : ""} ${selectedUser?.admin === member?._id ? "" : "hidden"}`}
                               >
-                               admin
+                                admin
                               </button>
                             </div>
                           ))}
@@ -202,7 +204,7 @@ function Message() {
                               Close
                             </button>
                             <button
-                              className="btn mx-3"
+                              className={`btn mx-3 ${selectedUser?.admin === authUser?._id ? "" : "hidden"}`}
                               onClick={() => {
                                 deleteGroup(selectedUser?._id);
                               }}
@@ -247,7 +249,7 @@ function Message() {
                           {otherUsers?.map((user) => (
                             <div
                               key={user._id}
-                          className={`flex items-center gap-2 mb-3 cursor-pointer ${groupMember.find((member) => member._id === user._id)?'hidden':''}`}
+                              className={`flex items-center gap-2 mb-3 cursor-pointer ${groupMember.find((member) => member._id === user._id) ? "hidden" : ""}`}
                               onClick={() => userclick(user)}
                             >
                               <img
@@ -303,7 +305,6 @@ function Message() {
                     </dialog>
                   </div>
                 )}
-                
               </div>
             </div>
           </div>
