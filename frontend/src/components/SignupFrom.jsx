@@ -1,126 +1,175 @@
-import React, { useState } from 'react'
-import { Link,useNavigate } from 'react-router-dom'
-import axios from 'axios';
-import toast from 'react-hot-toast';
-
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 function SignupForm() {
+  const navigate = useNavigate();
 
-  const [user, setUser] = useState({
+  const initialValues = {
     fullName: "",
     username: "",
     password: "",
     confirmPassword: "",
     gender: "",
+  };
+
+  const validationSchema = Yup.object({
+    fullName: Yup.string().required("Full Name is required"),
+    username: Yup.string().required("Username is required"),
+    password: Yup.string()
+      .required("Password is required")
+      .min(6, "Password must be at least 6 characters"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password"), null], "Passwords must match")
+      .required("Confirm Password is required"),
+    gender: Yup.string().required("Gender is required"),
   });
 
-  const navigate = useNavigate()
-
-  const handleCheckbox = (gender) => {
-    setUser({ ...user, gender });
-  }
-  const onSubmitHandler = async(e)=>{
-    e.preventDefault();
+  const onSubmit = async (values, { resetForm }) => {
     try {
-      const res = await axios.post(`http://localhost:8080/api/user/register`,user,{
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      })
+      const res = await axios.post(
+        "http://localhost:8080/api/user/register",
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
       if (res.data.success) {
         toast.success(res.data.message);
-        navigate("/login")
+        navigate("/login");
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "An error occurred");
       console.log(error);
     }
-    setUser({
-      fullName: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-      gender: "",
-    })
-  }
+    resetForm();
+  };
+
   return (
     <div className="min-w-96 mx-auto">
-    <div className='w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border border-gray-100'>
-      <h1 className='text-3xl font-bold text-center'>Signup</h1>
-      <form onSubmit={onSubmitHandler} action="">
-        <div>
-          <label className='label p-2'>
-            <span className='text-base label-text'>Full Name</span>
-          </label>
-          <input
-            value={user.fullName}
-            onChange={(e) => setUser({ ...user, fullName: e.target.value })}
-            className='w-full input input-bordered h-10'
-            type="text"
-            placeholder='Full Name' />
-        </div>
-        <div>
-          <label className='label p-2'>
-            <span className='text-base label-text'>Username</span>
-          </label>
-          <input
-            value={user.username}
-            onChange={(e) => setUser({ ...user, username: e.target.value })}
-            className='w-full input input-bordered h-10'
-            type="text"
-            placeholder='Username' />
-        </div>
-        <div>
-          <label className='label p-2'>
-            <span className='text-base label-text'>Password</span>
-          </label>
-          <input
-            value={user.password}
-            onChange={(e) => setUser({ ...user, password: e.target.value })}
-            className='w-full input input-bordered h-10'
-            type="password"
-            placeholder='Password' />
-        </div>
-        <div>
-          <label className='label p-2'>
-            <span className='text-base label-text'>Confirm Password</span>
-          </label>
-          <input
-            value={user.confirmPassword}
-            onChange={(e) => setUser({ ...user, confirmPassword: e.target.value })}
-            className='w-full input input-bordered h-10'
-            type="password"
-            placeholder='Confirm Password' />
-        </div>
-        <div className='flex items-center my-4'>
-          <div className='flex items-center'>
-            <p>Male</p>
-            <input
-              type="checkbox"
-              checked={user.gender === "male"}
-              onChange={() => handleCheckbox("male")}
-              defaultChecked
-              className="checkbox mx-2" />
-          </div>
-          <div className='flex items-center'>
-            <p>Female</p>
-            <input
-              type="checkbox"
-              checked={user.gender === "female"}
-              onChange={() => handleCheckbox("female")}
-              defaultChecked
-              className="checkbox mx-2" />
-          </div>
-        </div>
-        <p className='text-center my-2'>Already have an account? <Link to="/login"> login </Link></p>
-        <div>
-          <button type='submit' className='btn btn-block btn-sm mt-2 border border-slate-700'>Singup</button>
-        </div>
-      </form>
+      <div className="w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border border-gray-100">
+        <h1 className="text-3xl font-bold text-center">Signup</h1>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={onSubmit}
+        >
+          <Form>
+            <div>
+              <label className="label p-2">
+                <span className="text-base label-text">Full Name</span>
+              </label>
+              <Field
+                type="text"
+                name="fullName"
+                className="w-full input input-bordered h-10"
+                placeholder="Full Name"
+              />
+              <ErrorMessage
+                name="fullName"
+                component="div"
+                className="text-red-600"
+              />
+            </div>
+            <div>
+              <label className="label p-2">
+                <span className="text-base label-text">Username</span>
+              </label>
+              <Field
+                type="text"
+                name="username"
+                className="w-full input input-bordered h-10"
+                placeholder="Username"
+              />
+              <ErrorMessage
+                name="username"
+                component="div"
+                className="text-red-600"
+              />
+            </div>
+            <div>
+              <label className="label p-2">
+                <span className="text-base label-text">Password</span>
+              </label>
+              <Field
+                type="password"
+                name="password"
+                className="w-full input input-bordered h-10"
+                placeholder="Password"
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="text-red-600"
+              />
+            </div>
+            <div>
+              <label className="label p-2">
+                <span className="text-base label-text">Confirm Password</span>
+              </label>
+              <Field
+                type="password"
+                name="confirmPassword"
+                className="w-full input input-bordered h-10"
+                placeholder="Confirm Password"
+              />
+              <ErrorMessage
+                name="confirmPassword"
+                component="div"
+                className="text-red-600"
+              />
+            </div>
+            <div className="flex items-center my-4">
+              <div className="flex items-center">
+                <label>
+                  <Field
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    className="radio mx-2"
+                  />
+                  Male
+                </label>
+              </div>
+              <div className="flex items-center">
+                <label>
+                  <Field
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    className="radio mx-2"
+                  />
+                  Female
+                </label>
+              </div>
+              <ErrorMessage
+                name="gender"
+                component="div"
+                className="text-red-600"
+              />
+            </div>
+            <p className="text-center my-2">
+              Already have an account? <Link to="/login"> login </Link>
+            </p>
+            <div>
+              <button
+                type="submit"
+                className="btn btn-block btn-sm mt-2 border border-slate-700"
+              >
+                Signup
+              </button>
+            </div>
+          </Form>
+        </Formik>
+      </div>
     </div>
-  </div>
-  )
+  );
 }
 
-export default SignupForm
+export default SignupForm;
