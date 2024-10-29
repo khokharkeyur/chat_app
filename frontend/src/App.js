@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Signup from "./components/SignupFrom";
+import Signup from "./components/SignupForm";
 import HomePage from "./components/HomePage";
 import Login from "./components/Login";
 import { useDispatch, useSelector } from "react-redux";
