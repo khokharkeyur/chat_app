@@ -1,42 +1,56 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import firebase from "../config/firebase.config.js"; 
 
 export const register = async (req, res) => {
     try {
-        const { fullName, username, password, confirmPassword, gender } = req.body;
-        if (!fullName || !username || !password || !confirmPassword || !gender) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-        if (password !== confirmPassword) {
-            return res.status(400).json({ message: "Password do not match" });
-        }
-
-        const user = await User.findOne({ username });
-        if (user) {
-            return res.status(400).json({ message: "Username already exit try different" });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // profilePhoto
-        const maleProfilePhoto = `https://avatar.iran.liara.run/public/boy?username=${username}`;
-        const femaleProfilePhoto = `https://avatar.iran.liara.run/public/girl?username=${username}`;
-
-        await User.create({
-            fullName,
-            username,
-            password: hashedPassword,
-            profilePhoto: gender === "male" ? maleProfilePhoto : femaleProfilePhoto,
-            gender
-        });
-        return res.status(201).json({
-            message: "Account created successfully.",
-            success: true
-        })
+      const { fullName, username, password, confirmPassword, gender } = req.body;
+  
+      if (!fullName || !username || !password || !confirmPassword || !gender) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Password do not match" });
+      }
+  
+      const userExists = await User.findOne({ username });
+      if (userExists) {
+        return res.status(400).json({ message: "Username already exists, try a different one" });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      let profilePhoto;
+      if (req.file) {
+        const storageRef = firebase.storage().ref();
+        const imageFileName = Date.now() + "-" + req.file.originalname;
+        const fileRef = storageRef.child("images/" + imageFileName);
+  
+        await fileRef.put(req.file.buffer);
+        profilePhoto = await fileRef.getDownloadURL();
+      } else {
+        profilePhoto = gender === "male" 
+          ? `https://avatar.iran.liara.run/public/boy?username=${username}`
+          : `https://avatar.iran.liara.run/public/girl?username=${username}`;
+      }
+      await User.create({
+        fullName,
+        username,
+        password: hashedPassword,
+        profilePhoto,
+        gender,
+      });
+  
+      res.status(201).json({
+        message: "Account created successfully.",
+        success: true,
+      });
     } catch (error) {
-        console.log(error);
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
     }
-};
+  };
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;

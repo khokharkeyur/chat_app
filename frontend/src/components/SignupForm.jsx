@@ -14,6 +14,7 @@ function SignupForm() {
     password: "",
     confirmPassword: "",
     gender: "",
+    image: null,
   };
 
   const validationSchema = Yup.object({
@@ -30,12 +31,20 @@ function SignupForm() {
 
   const onSubmit = async (values, { resetForm }) => {
     try {
+      const formData = new FormData();
+      formData.append("fullName", values.fullName);
+      formData.append("username", values.username);
+      formData.append("password", values.password);
+      formData.append("confirmPassword", values.confirmPassword);
+      formData.append("gender", values.gender);
+      if (values.image) formData.append("image", values.image);
+
       const res = await axios.post(
         "http://localhost:8080/api/user/register",
-        values,
+        formData,
         {
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
         }
@@ -60,112 +69,135 @@ function SignupForm() {
           validationSchema={validationSchema}
           onSubmit={onSubmit}
         >
-          <Form>
-            <div>
-              <label className="label p-2">
-                <span className="text-base label-text">Full Name</span>
-              </label>
-              <Field
-                type="text"
-                name="fullName"
-                className="w-full input input-bordered h-10"
-                placeholder="Full Name"
-              />
-              <ErrorMessage
-                name="fullName"
-                component="div"
-                className="text-red-600"
-              />
-            </div>
-            <div>
-              <label className="label p-2">
-                <span className="text-base label-text">Username</span>
-              </label>
-              <Field
-                type="text"
-                name="username"
-                className="w-full input input-bordered h-10"
-                placeholder="Username"
-              />
-              <ErrorMessage
-                name="username"
-                component="div"
-                className="text-red-600"
-              />
-            </div>
-            <div>
-              <label className="label p-2">
-                <span className="text-base label-text">Password</span>
-              </label>
-              <Field
-                type="password"
-                name="password"
-                className="w-full input input-bordered h-10"
-                placeholder="Password"
-              />
-              <ErrorMessage
-                name="password"
-                component="div"
-                className="text-red-600"
-              />
-            </div>
-            <div>
-              <label className="label p-2">
-                <span className="text-base label-text">Confirm Password</span>
-              </label>
-              <Field
-                type="password"
-                name="confirmPassword"
-                className="w-full input input-bordered h-10"
-                placeholder="Confirm Password"
-              />
-              <ErrorMessage
-                name="confirmPassword"
-                component="div"
-                className="text-red-600"
-              />
-            </div>
-            <div className="flex items-center my-4">
-              <div className="flex items-center">
-                <label>
-                  <Field
-                    type="radio"
-                    name="gender"
-                    value="male"
-                    className="radio mx-2"
-                  />
-                  Male
+          {({ setFieldValue }) => (
+            <Form>
+              <div>
+                <label className="label p-2">
+                  <span className="text-base label-text">Full Name</span>
                 </label>
+                <Field
+                  type="text"
+                  name="fullName"
+                  className="w-full input input-bordered h-10"
+                  placeholder="Full Name"
+                />
+                <ErrorMessage
+                  name="fullName"
+                  component="div"
+                  className="text-red-600"
+                />
               </div>
-              <div className="flex items-center">
-                <label>
-                  <Field
-                    type="radio"
-                    name="gender"
-                    value="female"
-                    className="radio mx-2"
-                  />
-                  Female
+              <div>
+                <label className="label p-2">
+                  <span className="text-base label-text">Username</span>
                 </label>
+                <Field
+                  type="text"
+                  name="username"
+                  className="w-full input input-bordered h-10"
+                  placeholder="Username"
+                />
+                <ErrorMessage
+                  name="username"
+                  component="div"
+                  className="text-red-600"
+                />
+              </div>
+
+              <div>
+                <label className="label p-2">
+                  <span className="text-base label-text">Profile Image</span>
+                </label>
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  onChange={(event) => {
+                    setFieldValue("image", event.currentTarget.files[0]);
+                  }}
+                  className="w-full input input-bordered pt-2"
+                />
               </div>
               <ErrorMessage
-                name="gender"
+                name="image"
                 component="div"
                 className="text-red-600"
               />
-            </div>
-            <p className="text-center my-2">
-              Already have an account? <Link to="/login"> login </Link>
-            </p>
-            <div>
-              <button
-                type="submit"
-                className="btn btn-block btn-sm mt-2 border border-slate-700"
-              >
-                Signup
-              </button>
-            </div>
-          </Form>
+
+              <div>
+                <label className="label p-2">
+                  <span className="text-base label-text">Password</span>
+                </label>
+                <Field
+                  type="password"
+                  name="password"
+                  className="w-full input input-bordered h-10"
+                  placeholder="Password"
+                />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="text-red-600"
+                />
+              </div>
+              <div>
+                <label className="label p-2">
+                  <span className="text-base label-text">Confirm Password</span>
+                </label>
+                <Field
+                  type="password"
+                  name="confirmPassword"
+                  className="w-full input input-bordered h-10"
+                  placeholder="Confirm Password"
+                />
+                <ErrorMessage
+                  name="confirmPassword"
+                  component="div"
+                  className="text-red-600"
+                />
+              </div>
+              <div className="flex items-center my-4">
+                <div className="flex items-center">
+                  <label>
+                    <Field
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      className="radio mx-2"
+                    />
+                    Male
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <label>
+                    <Field
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      className="radio mx-2"
+                    />
+                    Female
+                  </label>
+                </div>
+                <ErrorMessage
+                  name="gender"
+                  component="div"
+                  className="text-red-600"
+                />
+              </div>
+              <p className="text-center my-2">
+                Already have an account? <Link to="/login"> login </Link>
+              </p>
+              <div>
+                <button
+                  type="submit"
+                  className="btn btn-block btn-sm mt-2 border border-slate-700"
+                >
+                  Signup
+                </button>
+              </div>
+            </Form>
+          )}
         </Formik>
       </div>
     </div>
