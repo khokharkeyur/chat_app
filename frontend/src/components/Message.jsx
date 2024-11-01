@@ -9,7 +9,7 @@ import deleteIcon from "../assets/delete.png";
 import { setGroups, updateSelectedUser } from "../redux/userSlice";
 
 function Message() {
-  const { selectedUser, authUser, onlineUsers, otherUsers } = useSelector(
+  const { selectedUser, authUser, otherUsers } = useSelector(
     (store) => store.user
   );
   useGetOtherUsers();
@@ -19,6 +19,10 @@ function Message() {
 
   const authUserId = authUser?._id;
   function newGroup() {
+    if (!otherUsers) return;
+  }
+
+  function viewProfile() {
     if (!otherUsers) return;
   }
 
@@ -114,21 +118,74 @@ function Message() {
     (member) => member?.fullName === authUser?.fullName
   );
 
-  const isOnline = onlineUsers?.includes(selectedUser?._id);
   return (
     <>
       {selectedUser !== null ? (
         <div className="md:min-w-[550px] flex flex-col">
-          <div className="flex gap-2 items-center bg-zinc-700 text-white px-4 py-2 mb-2 ">
-            <div className={`avatar ${isOnline ? "online" : ""}`}>
-              <div className="w-12 rounded-full">
-                <img src={selectedUser?.profilePhoto} alt="" />
-              </div>
+          <div className="flex gap-2 items-center bg-zinc-700 text-white px-4 py-2 mb-2 w-full">
+            <div>
+              <button
+                className="w-full grid grid-cols-2 items-center cursor-pointer gap-1"
+                onClick={() => {
+                  if (!selectedUser.members || selectedUser.members.length === 0) {
+                    document.getElementById("view_profile").showModal();
+                    viewProfile();
+                  }
+                }}
+              >
+                <div className="">
+                  <img src={selectedUser?.profilePhoto} alt="" className="w-12 h-12 rounded-full" />
+                </div>
+                <p>{selectedUser?.fullName || selectedUser?.name}</p>
+              </button>
+              <dialog
+                id="view_profile"
+                className="modal modal-bottom sm:modal-middle"
+              >
+                <div className="modal-box">
+                  {selectedUser && (
+                    <div className="flex flex-col justify-center items-center">
+                      <img src={selectedUser?.profilePhoto} alt="" className="w-20 h-20 rounded-full"/>
+                      <p>{selectedUser?.fullName}</p>
+                      <div className="flex gap-3 mt-3">
+                        <p className="font-semibold text-xl">username:</p>
+                        <p className="text-xl">{selectedUser?.username}</p>
+                      </div>
+                      <div className="flex gap-3 mt-3">
+                        <p className="font-semibold text-xl">gender:</p>
+                        <p className="text-xl">{selectedUser?.gender}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="modal-action">
+                    <form method="dialog" className="w-full flex">
+                      <div className="w-full flex gap-4">
+                      <p
+                        className="btn text-red-500"
+                      >
+                        Block
+                      </p>
+                      <p
+                        className="btn text-red-500"
+                      >
+                        Report
+                      </p>
+                      </div>
+                      <button
+                        className="btn flex justify-end"
+                        onClick={() => {
+                          setGroupMember([]);
+                        }}
+                      >
+                        Close
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </dialog>
             </div>
             <div className="flex flex-col flex-1">
-              <div className="flex gap-2 flex-1 justify-between">
-                <p>{selectedUser?.fullName || selectedUser?.name}</p>
-
+              <div className="flex gap-2 flex-1 justify-end">
                 {/* create group */}
                 {selectedUser?.members?.length > 0 ? (
                   <div>
