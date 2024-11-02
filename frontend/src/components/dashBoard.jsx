@@ -8,7 +8,7 @@ function Dashboard() {
   const { authUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const dialogRef = useRef(null); // Reference for the dialog
+  const dialogRef = useRef(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -22,7 +22,7 @@ function Dashboard() {
     if (dialogRef.current) {
       dialogRef.current.showModal();
     }
-    handleClose(); // Close the menu after opening the dialog
+    handleClose();
   };
 
   const closeDialog = () => {
