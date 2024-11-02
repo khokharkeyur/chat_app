@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Signup from "./components/SignupForm";
-import HomePage from "./components/HomePage";
+import Dashboard from './components/dashBoard';
 import Login from "./components/Login";
 import { useDispatch, useSelector } from "react-redux";
 import io from 'socket.io-client'
@@ -11,7 +11,7 @@ import { setOnlineUsers } from "./redux/userSlice";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <Dashboard />,
   },
   {
     path: "/signup",
