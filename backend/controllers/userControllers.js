@@ -106,3 +106,25 @@ export const getOtherUsers = async (req, res) => {
         console.log(error);
     }
 }
+
+export const getAdminDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const admin = await User.findById(id).select('-password');
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found", success: false });
+    }
+
+    return res.status(200).json({
+      _id: admin._id,
+      username: admin.username,
+      fullName: admin.fullName,
+      profilePhoto: admin.profilePhoto,
+      gender: admin.gender,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

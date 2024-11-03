@@ -1,10 +1,12 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import HomePage from "./HomePage";
 import Tooltip from "@mui/material/Tooltip";
 import { Avatar, Divider, IconButton, Menu, MenuItem } from "@mui/material";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 function Dashboard() {
+  const [adminDetails,setAdminDetails] = useState()
   const { authUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -31,6 +33,22 @@ function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    const fetchAdminDetails = async () => {
+      if (!authUser?._id) return;
+
+      try {
+        axios.defaults.withCredentials = true;
+        const res = await axios.get(`http://localhost:8080/api/user/admin/${authUser._id}`);
+        setAdminDetails(res?.data)
+        
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchAdminDetails();
+  }, [authUser]);
   return (
     <div>
       <div className="w-full flex justify-end">
@@ -97,17 +115,21 @@ function Dashboard() {
 
       <dialog ref={dialogRef} className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
-          {authUser && (
+          {adminDetails && (
             <div className="flex flex-col justify-center items-center">
               <img
-                src={authUser.profilePhoto}
+                src={adminDetails.profilePhoto}
                 alt=""
                 className="w-20 h-20 rounded-full"
               />
-              <p>{authUser.fullName}</p>
+              <p>{adminDetails.fullName}</p>
               <div className="flex gap-3 mt-3">
                 <p className="font-semibold text-xl">Username:</p>
-                <p className="text-xl">{authUser.username}</p>
+                <p className="text-xl">{adminDetails.username}</p>
+              </div>
+              <div className="flex gap-3 mt-3">
+                <p className="font-semibold text-xl">Gender:</p>
+                <p className="text-xl">{adminDetails.gender}</p>
               </div>
             </div>
           )}
