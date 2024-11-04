@@ -10,5 +10,6 @@ router.route("/login").post(login)
 router.route("/logout").get(logout)
 router.route("/").get(isAuthenticated,getOtherUsers)
 router.route("/admin/:id").get(isAuthenticated, getAdminDetails); 
+router.route("/profile/update").put(isAuthenticated, upload.single("image"), updateProfile);
 
 export default router;

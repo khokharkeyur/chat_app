@@ -2,10 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import HomePage from "./HomePage";
 import Tooltip from "@mui/material/Tooltip";
 import { Avatar, Divider, IconButton, Menu, MenuItem } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from "react-redux";
 import axios from "axios";
 
 function Dashboard() {
+  const navigate = useNavigate();
+  
   const [adminDetails,setAdminDetails] = useState()
   const { authUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -40,6 +43,8 @@ function Dashboard() {
       try {
         axios.defaults.withCredentials = true;
         const res = await axios.get(`http://localhost:8080/api/user/admin/${authUser._id}`);
+        console.log(res?.data);
+        
         setAdminDetails(res?.data)
         
       } catch (error) {
@@ -49,6 +54,11 @@ function Dashboard() {
 
     fetchAdminDetails();
   }, [authUser]);
+
+  const handleEditProfile = () => {
+    navigate('/signup', { state: { adminDetails } });
+  };
+
   return (
     <div>
       <div className="w-full flex justify-end">
@@ -106,7 +116,7 @@ function Dashboard() {
           <MenuItem onClick={openDialog}>
             <Avatar /> Profile
           </MenuItem>
-          <MenuItem onClick={handleClose}>
+          <MenuItem onClick={handleEditProfile}>
             <Avatar /> Edit Profile
           </MenuItem>
           <Divider />

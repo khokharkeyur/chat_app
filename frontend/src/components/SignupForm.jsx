@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Formik, Field, Form, ErrorMessage } from "formik";
@@ -7,13 +7,15 @@ import * as Yup from "yup";
 
 function SignupForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const adminDetails = location.state?.adminDetails;
 
   const initialValues = {
-    fullName: "",
-    username: "",
+    fullName: adminDetails?.fullName || "",
+    username: adminDetails?.username || "",
     password: "",
     confirmPassword: "",
-    gender: "",
+    gender: adminDetails?.gender || "",
     image: null,
   };
 

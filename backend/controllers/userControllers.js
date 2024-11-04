@@ -51,6 +51,52 @@ export const register = async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   };
+
+  export const updateProfile = async (req, res) => {
+    try {
+      const { fullName, username, gender } = req.body;
+      const userId = req.user.id;
+  
+      if (!fullName || !username || !gender) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+  
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      user.fullName = fullName;
+      user.username = username;
+      user.gender = gender;
+  
+      if (req.file) {
+        const storageRef = firebase.storage().ref();
+        const imageFileName = Date.now() + "-" + req.file.originalname;
+        const fileRef = storageRef.child("images/" + imageFileName);
+    
+        await fileRef.put(req.file.buffer);
+        user.profilePhoto = await fileRef.getDownloadURL();
+      }
+  
+      await user.save();
+  
+      res.status(200).json({
+        message: "Profile updated successfully.",
+        success: true,
+        user: {
+          fullName: user.fullName,
+          username: user.username,
+          profilePhoto: user.profilePhoto,
+          gender: user.gender,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
