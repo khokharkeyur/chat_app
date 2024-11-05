@@ -54,14 +54,13 @@ export const register = async (req, res) => {
 
   export const updateProfile = async (req, res) => {
     try {
-      const { fullName, username, gender } = req.body;
-      const userId = req.user.id;
+      const { fullName, username, gender,adminId } = req.body;
   
       if (!fullName || !username || !gender) {
         return res.status(400).json({ message: "All fields are required" });
       }
   
-      const user = await User.findById(userId);
+      const user = await User.findById(adminId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }

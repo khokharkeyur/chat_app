@@ -22,12 +22,14 @@ function SignupForm() {
   const validationSchema = Yup.object({
     fullName: Yup.string().required("Full Name is required"),
     username: Yup.string().required("Username is required"),
-    password: Yup.string()
-      .required("Password is required")
-      .min(6, "Password must be at least 6 characters"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
-      .required("Confirm Password is required"),
+    ...(adminDetails ? {} : {
+      password: Yup.string()
+        .required("Password is required")
+        .min(6, "Password must be at least 6 characters"),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref("password"), null], "Passwords must match")
+        .required("Confirm Password is required"),
+    }),
     gender: Yup.string().required("Gender is required"),
   });
 
@@ -36,24 +38,33 @@ function SignupForm() {
       const formData = new FormData();
       formData.append("fullName", values.fullName);
       formData.append("username", values.username);
-      formData.append("password", values.password);
-      formData.append("confirmPassword", values.confirmPassword);
+      if (adminDetails) {
+        formData.append("adminId", adminDetails?._id);
+      }
+      if (!adminDetails) {
+        formData.append("password", values.password);
+        formData.append("confirmPassword", values.confirmPassword);
+      }
       formData.append("gender", values.gender);
       if (values.image) formData.append("image", values.image);
 
-      const res = await axios.post(
-        "http://localhost:8080/api/user/register",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const apiUrl = "http://localhost:8080/api/user" + (adminDetails ? "/profile/update" : "/register");
+      const method = adminDetails ? axios.put : axios.post;
+  
+      const res = await method(apiUrl, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
+
       if (res.data.success) {
         toast.success(res.data.message);
-        navigate("/login");
+        if (adminDetails) {
+          navigate("/");
+        } else {
+          navigate("/login");
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
@@ -126,38 +137,42 @@ function SignupForm() {
                 className="text-red-600"
               />
 
-              <div>
-                <label className="label p-2">
-                  <span className="text-base label-text">Password</span>
-                </label>
-                <Field
-                  type="password"
-                  name="password"
-                  className="w-full input input-bordered h-10"
-                  placeholder="Password"
-                />
-                <ErrorMessage
-                  name="password"
-                  component="div"
-                  className="text-red-600"
-                />
-              </div>
-              <div>
-                <label className="label p-2">
-                  <span className="text-base label-text">Confirm Password</span>
-                </label>
-                <Field
-                  type="password"
-                  name="confirmPassword"
-                  className="w-full input input-bordered h-10"
-                  placeholder="Confirm Password"
-                />
-                <ErrorMessage
-                  name="confirmPassword"
-                  component="div"
-                  className="text-red-600"
-                />
-              </div>
+{!adminDetails && (
+                <>
+                  <div>
+                    <label className="label p-2">
+                      <span className="text-base label-text">Password</span>
+                    </label>
+                    <Field
+                      type="password"
+                      name="password"
+                      className="w-full input input-bordered h-10"
+                      placeholder="Password"
+                    />
+                    <ErrorMessage
+                      name="password"
+                      component="div"
+                      className="text-red-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="label p-2">
+                      <span className="text-base label-text">Confirm Password</span>
+                    </label>
+                    <Field
+                      type="password"
+                      name="confirmPassword"
+                      className="w-full input input-bordered h-10"
+                      placeholder="Confirm Password"
+                    />
+                    <ErrorMessage
+                      name="confirmPassword"
+                      component="div"
+                      className="text-red-600"
+                    />
+                  </div>
+                </>
+              )}
               <div className="flex items-center my-4">
                 <div className="flex items-center">
                   <label>
