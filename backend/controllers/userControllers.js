@@ -68,13 +68,17 @@ export const register = async (req, res) => {
       user.fullName = fullName;
       user.username = username;
       user.gender = gender;
-  
       if (req.file) {
+        if (user.profilePhoto) {
+          const fileRef = firebase.storage().refFromURL(user.profilePhoto);
+          await fileRef.delete(); 
+        }
+  
         const storageRef = firebase.storage().ref();
         const imageFileName = Date.now() + "-" + req.file.originalname;
         const fileRef = storageRef.child("images/" + imageFileName);
-    
-        await fileRef.put(req.file.buffer);
+  
+        await fileRef.put(req.file.buffer); 
         user.profilePhoto = await fileRef.getDownloadURL();
       }
   
