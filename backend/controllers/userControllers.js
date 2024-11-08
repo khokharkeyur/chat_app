@@ -69,7 +69,7 @@ export const register = async (req, res) => {
       user.username = username;
       user.gender = gender;
       if (req.file) {
-        if (user.profilePhoto) {
+        if (user.profilePhoto && !user.profilePhoto.includes('avatar.iran.liara.run')) {
           const fileRef = firebase.storage().refFromURL(user.profilePhoto);
           await fileRef.delete(); 
         }
