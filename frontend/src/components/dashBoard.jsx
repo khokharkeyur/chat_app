@@ -119,6 +119,9 @@ function Dashboard() {
           <MenuItem onClick={handleEditProfile}>
             <Avatar /> Edit Profile
           </MenuItem>
+          <MenuItem>
+            <Avatar /> Change Password
+          </MenuItem>
           <Divider />
         </Menu>
       </div>
