@@ -119,7 +119,7 @@ function Dashboard() {
           <MenuItem onClick={handleEditProfile}>
             <Avatar /> Edit Profile
           </MenuItem>
-          <MenuItem>
+          <MenuItem onClick={()=>navigate('/forgetPassword')}>
             <Avatar /> Change Password
           </MenuItem>
           <Divider />

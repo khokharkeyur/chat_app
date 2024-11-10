@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Signup from "./components/SignupForm";
 import Dashboard from './components/dashBoard';
 import Login from "./components/Login";
+import ForgetPassword from "./components/ForgetPassword";
 import { useDispatch, useSelector } from "react-redux";
 import io from 'socket.io-client'
 import { setSocket } from "./redux/socketSlice";
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/forgetPassword",
+    element: <ForgetPassword />,
   },
 ]);
 
