@@ -1,5 +1,5 @@
 import express from 'express'
-import { getAdminDetails,getOtherUsers, login, logout, register, updateProfile } from '../controllers/userControllers.js';
+import { resetPassword, getAdminDetails,getOtherUsers, login, logout, register, updateProfile } from '../controllers/userControllers.js';
 import isAuthenticated from '../middleware/isAuthenticated.js';
 import upload from '../utils/upload.js';
 
@@ -11,5 +11,6 @@ router.route("/logout").get(logout)
 router.route("/").get(isAuthenticated,getOtherUsers)
 router.route("/admin/:id").get(isAuthenticated, getAdminDetails); 
 router.route("/profile/update").put(isAuthenticated, upload.single("image"), updateProfile);
+router.route("/resetPassword").put(resetPassword);
 
 export default router;
