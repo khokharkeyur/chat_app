@@ -1,6 +1,7 @@
 import React from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
 
 function ForgotPassword() {
   const initialValues = {
@@ -20,8 +21,24 @@ function ForgotPassword() {
   });
 
   const onSubmit = async (values, { resetForm }) => {
-    console.log(values);
-    resetForm();
+    const { username, password, confirmPassword } = values;
+
+    try {
+      const response = await axios.put('http://localhost:8080/api/user/resetPassword', {
+        username, 
+        newPassword: password,
+        confirmPassword,
+      });
+  
+      if (response.data.success) {
+        console.log("forget password completed");
+        
+        resetForm();
+      }
+    } catch (error) {
+      console.error("Error occurred during password reset:", error);
+      // resetForm();
+    }
   };
 
   return (
