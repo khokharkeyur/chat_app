@@ -8,11 +8,22 @@ import { useDispatch, useSelector } from "react-redux";
 import io from 'socket.io-client'
 import { setSocket } from "./redux/socketSlice";
 import { setOnlineUsers } from "./redux/userSlice";
+import PrivateRoutes from "./components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
+    element: <PrivateRoutes />,
+    children: [
+      {
+        path: "/",
+        element: <Dashboard />,
+      },
+      {
+        path: "/forgetPassword",
+        element: <ForgetPassword />,
+      },
+    ],
   },
   {
     path: "/signup",
@@ -21,10 +32,6 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
-  },
-  {
-    path: "/forgetPassword",
-    element: <ForgetPassword />,
   },
 ]);
 
