@@ -33,7 +33,10 @@ const Login = () => {
           withCredentials: true,
         }
       );
-      dispatch(setAuthUser(res.data));
+      const {token, ...userData} = res.data
+      console.log("token",token);
+      localStorage.setItem("Token", token);
+      dispatch(setAuthUser(userData));
       navigate("/");
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
