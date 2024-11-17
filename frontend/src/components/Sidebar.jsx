@@ -30,6 +30,7 @@
             try {
                 const res = await axios.get(`http://localhost:8080/api/user/logout`);
                 toast.success(res.data.message);
+                localStorage.removeItem("Token");
                 naviget('/login')
                 dispatch(setSelectedUser(null));
                 dispatch(setAuthUser(null))
