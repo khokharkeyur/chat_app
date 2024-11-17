@@ -1,15 +1,9 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import Cookies from 'cookies-js'; 
+import { Navigate, Outlet } from "react-router-dom";
 
 const PrivateRoutes = () => {
-  const auth = { token: true };
-  const token = Cookies.get('token');
-  console.log('Token:', token); 
+  const token = localStorage.getItem("Token");
   
-
-  return (
-    auth.token ? <Outlet /> : <Navigate to="/login" />
-  );
+  return token ? <Outlet /> : <Navigate to="/login" />;
 };
 
 export default PrivateRoutes;
