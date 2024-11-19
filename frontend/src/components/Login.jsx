@@ -33,9 +33,11 @@ const Login = () => {
           withCredentials: true,
         }
       );
-      const {token, ...userData} = res.data
+      const {token,refreshToken, ...userData} = res.data
       console.log("token",token);
+      console.log(refreshToken,"refreshToken");
       localStorage.setItem("Token", token);
+      localStorage.setItem("RefreshToken", refreshToken);
       dispatch(setAuthUser(userData));
       navigate("/");
     } catch (error) {
