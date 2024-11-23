@@ -6,6 +6,7 @@
     import { useNavigate } from 'react-router-dom';
     import { useDispatch, useSelector } from 'react-redux';
     import { setAuthUser, setOtherUsers,setSelectedUser } from '../redux/userSlice';
+    import Cookies from 'js-cookie';
 
 
     function Sidebar() {
@@ -30,8 +31,8 @@
             try {
                 const res = await axios.get(`http://localhost:8080/api/user/logout`);
                 toast.success(res.data.message);
-                localStorage.removeItem("Token");
-                localStorage.removeItem("RefreshToken");
+                Cookies.remove("AccessToken", { path: "/" });
+                Cookies.remove("RefreshToken", { path: "/" });
                 naviget('/login')
                 dispatch(setSelectedUser(null));
                 dispatch(setAuthUser(null))
