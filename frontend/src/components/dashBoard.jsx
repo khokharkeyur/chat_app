@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import HomePage from "./HomePage";
 import Tooltip from "@mui/material/Tooltip";
 import { Avatar, Divider, IconButton, Menu, MenuItem } from "@mui/material";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
 function Dashboard() {
   const navigate = useNavigate();
-  
-  const [adminDetails,setAdminDetails] = useState()
+
+  const [adminDetails, setAdminDetails] = useState();
   const { authUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -42,11 +42,12 @@ function Dashboard() {
 
       try {
         axios.defaults.withCredentials = true;
-        const res = await axios.get(`http://localhost:8080/api/user/admin/${authUser._id}`);
+        const res = await axios.get(
+          `http://localhost:8080/api/user/admin/${authUser._id}`
+        );
         console.log(res?.data);
-        
-        setAdminDetails(res?.data)
-        
+
+        setAdminDetails(res?.data);
       } catch (error) {
         console.log(error);
       }
@@ -56,7 +57,7 @@ function Dashboard() {
   }, [authUser]);
 
   const handleEditProfile = () => {
-    navigate('/signup', { state: { adminDetails } });
+    navigate("/signup", { state: { adminDetails } });
   };
 
   return (
@@ -119,7 +120,7 @@ function Dashboard() {
           <MenuItem onClick={handleEditProfile}>
             <Avatar /> Edit Profile
           </MenuItem>
-          <MenuItem onClick={()=>navigate('/forgetPassword')}>
+          <MenuItem onClick={() => navigate("/forgetPassword")}>
             <Avatar /> Change Password
           </MenuItem>
           <Divider />

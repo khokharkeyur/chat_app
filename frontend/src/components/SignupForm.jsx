@@ -22,14 +22,16 @@ function SignupForm() {
   const validationSchema = Yup.object({
     fullName: Yup.string().required("Full Name is required"),
     username: Yup.string().required("Username is required"),
-    ...(adminDetails ? {} : {
-      password: Yup.string()
-        .required("Password is required")
-        .min(6, "Password must be at least 6 characters"),
-      confirmPassword: Yup.string()
-        .oneOf([Yup.ref("password"), null], "Passwords must match")
-        .required("Confirm Password is required"),
-    }),
+    ...(adminDetails
+      ? {}
+      : {
+          password: Yup.string()
+            .required("Password is required")
+            .min(6, "Password must be at least 6 characters"),
+          confirmPassword: Yup.string()
+            .oneOf([Yup.ref("password"), null], "Passwords must match")
+            .required("Confirm Password is required"),
+        }),
     gender: Yup.string().required("Gender is required"),
   });
 
@@ -48,9 +50,11 @@ function SignupForm() {
       formData.append("gender", values.gender);
       if (values.image) formData.append("image", values.image);
 
-      const apiUrl = "http://localhost:8080/api/user" + (adminDetails ? "/profile/update" : "/register");
+      const apiUrl =
+        "http://localhost:8080/api/user" +
+        (adminDetails ? "/profile/update" : "/register");
       const method = adminDetails ? axios.put : axios.post;
-  
+
       const res = await method(apiUrl, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -137,7 +141,7 @@ function SignupForm() {
                 className="text-red-600"
               />
 
-{!adminDetails && (
+              {!adminDetails && (
                 <>
                   <div>
                     <label className="label p-2">
@@ -157,7 +161,9 @@ function SignupForm() {
                   </div>
                   <div>
                     <label className="label p-2">
-                      <span className="text-base label-text">Confirm Password</span>
+                      <span className="text-base label-text">
+                        Confirm Password
+                      </span>
                     </label>
                     <Field
                       type="password"

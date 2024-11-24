@@ -16,7 +16,7 @@ function ForgotPassword() {
       .min(6, "Password must be at least 6 characters long")
       .required("Password is required"),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref('password'), null], "Passwords must match")
+      .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Please confirm your password"),
   });
 
@@ -24,15 +24,18 @@ function ForgotPassword() {
     const { username, password, confirmPassword } = values;
 
     try {
-      const response = await axios.put('http://localhost:8080/api/user/resetPassword', {
-        username, 
-        newPassword: password,
-        confirmPassword,
-      });
-  
+      const response = await axios.put(
+        "http://localhost:8080/api/user/resetPassword",
+        {
+          username,
+          newPassword: password,
+          confirmPassword,
+        }
+      );
+
       if (response.data.success) {
         console.log("forget password completed");
-        
+
         resetForm();
       }
     } catch (error) {

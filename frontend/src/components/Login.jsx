@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { setAuthUser } from "../redux/userSlice";
 import { Formik, Field, Form, ErrorMessage } from "formik";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import * as Yup from "yup";
 
 const Login = () => {
@@ -34,10 +34,10 @@ const Login = () => {
           withCredentials: true,
         }
       );
-      const {token,refreshToken, ...userData} = res.data
-      console.log("token",token);
-      console.log(refreshToken,"refreshToken");
-      Cookies.set("AccessToken", token, { expires: 1, path: "/" }); 
+      const { token, refreshToken, ...userData } = res.data;
+      console.log("token", token);
+      console.log(refreshToken, "refreshToken");
+      Cookies.set("AccessToken", token, { expires: 1, path: "/" });
       Cookies.set("RefreshToken", refreshToken, { expires: 7, path: "/" });
       dispatch(setAuthUser(userData));
       navigate("/");

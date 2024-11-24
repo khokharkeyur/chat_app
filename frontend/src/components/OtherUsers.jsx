@@ -9,24 +9,23 @@ function OtherUsers() {
   useGetGroups();
   const otherUsers = useSelector((store) => store.user.otherUsers);
   const groups = useSelector((store) => store.user.Groups);
-  const authUser = useSelector(store => store.user);
-  const selectedUser = useSelector(store => store.user.selectedUser);
-  
+  const authUser = useSelector((store) => store.user);
 
   const groupMembers = Array.isArray(groups)
-    ? groups.flatMap((group) => group?.members.map((member) => member?.fullName) || [])
+    ? groups.flatMap(
+        (group) => group?.members.map((member) => member?.fullName) || []
+      )
     : [];
 
   const authUserFullName = authUser?.authUser?.fullName;
   const isAuthUserInGroup = groupMembers.includes(authUserFullName);
-  
+
   if (!otherUsers) return null;
 
   return (
     <div className="overflow-auto flex-1 sm:block">
-      {isAuthUserInGroup && groups.map((group) => (
-        <OtherUser key={group._id} user={group} />
-      ))}
+      {isAuthUserInGroup &&
+        groups.map((group) => <OtherUser key={group._id} user={group} />)}
       {otherUsers.map((user) => (
         <OtherUser key={user._id} user={user} />
       ))}

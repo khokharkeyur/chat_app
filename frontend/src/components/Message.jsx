@@ -127,14 +127,21 @@ function Message() {
               <button
                 className="w-full grid grid-cols-2 items-center cursor-pointer gap-1"
                 onClick={() => {
-                  if (!selectedUser.members || selectedUser.members.length === 0) {
+                  if (
+                    !selectedUser.members ||
+                    selectedUser.members.length === 0
+                  ) {
                     document.getElementById("view_profile").showModal();
                     viewProfile();
                   }
                 }}
               >
                 <div className="">
-                  <img src={selectedUser?.profilePhoto} alt="" className="w-12 h-12 rounded-full" />
+                  <img
+                    src={selectedUser?.profilePhoto}
+                    alt=""
+                    className="w-12 h-12 rounded-full"
+                  />
                 </div>
                 <p>{selectedUser?.fullName || selectedUser?.name}</p>
               </button>
@@ -145,7 +152,11 @@ function Message() {
                 <div className="modal-box">
                   {selectedUser && (
                     <div className="flex flex-col justify-center items-center">
-                      <img src={selectedUser?.profilePhoto} alt="" className="w-20 h-20 rounded-full"/>
+                      <img
+                        src={selectedUser?.profilePhoto}
+                        alt=""
+                        className="w-20 h-20 rounded-full"
+                      />
                       <p>{selectedUser?.fullName}</p>
                       <div className="flex gap-3 mt-3">
                         <p className="font-semibold text-xl">username:</p>
@@ -160,16 +171,8 @@ function Message() {
                   <div className="modal-action">
                     <form method="dialog" className="w-full flex">
                       <div className="w-full flex gap-4">
-                      <p
-                        className="btn text-red-500"
-                      >
-                        Block
-                      </p>
-                      <p
-                        className="btn text-red-500"
-                      >
-                        Report
-                      </p>
+                        <p className="btn text-red-500">Block</p>
+                        <p className="btn text-red-500">Report</p>
                       </div>
                       <button
                         className="btn flex justify-end"
