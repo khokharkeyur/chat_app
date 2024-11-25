@@ -9,7 +9,7 @@ import {
   setAuthUser,
   setOtherUsers,
   setSelectedUser,
-} from "../redux/userSlice";
+} from "../../../redux/userSlice";
 import Cookies from "js-cookie";
 
 function Sidebar() {

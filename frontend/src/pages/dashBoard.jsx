@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import HomePage from "./HomePage";
+import HomePage from "../components/app/home";
 import Tooltip from "@mui/material/Tooltip";
 import { Avatar, Divider, IconButton, Menu, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";

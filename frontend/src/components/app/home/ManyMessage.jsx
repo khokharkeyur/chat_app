@@ -1,8 +1,8 @@
 import React from "react";
 import InnerMessage from "./InnerMessage";
-import useGetMessages from "../hooks/useGetMessages";
+import useGetMessages from "../../../hooks/useGetMessages";
 import { useSelector } from "react-redux";
-import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
+import useGetRealTimeMessage from "../../../hooks/useGetRealTimeMessage";
 
 function ManyMessage() {
   useGetMessages();
