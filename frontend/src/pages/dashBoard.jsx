@@ -45,8 +45,6 @@ function Dashboard() {
         const res = await axios.get(
           `http://localhost:8080/api/user/admin/${authUser._id}`
         );
-        console.log(res?.data);
-
         setAdminDetails(res?.data);
       } catch (error) {
         console.log(error);
