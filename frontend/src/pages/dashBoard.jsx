@@ -4,7 +4,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { Avatar, Divider, IconButton, Menu, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import axiosInterceptors from "../components/app/axiosInterceptors";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -41,9 +41,8 @@ function Dashboard() {
       if (!authUser?._id) return;
 
       try {
-        axios.defaults.withCredentials = true;
-        const res = await axios.get(
-          `http://localhost:8080/api/user/admin/${authUser._id}`
+        const res = await axiosInterceptors.get(
+          `/user/admin/${authUser._id}`
         );
         setAdminDetails(res?.data);
       } catch (error) {

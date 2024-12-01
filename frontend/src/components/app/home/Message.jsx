@@ -3,7 +3,7 @@ import SendInput from "./SendInput";
 import ManyMessage from "./ManyMessage";
 import { useDispatch, useSelector } from "react-redux";
 import useGetOtherUsers from "../../../hooks/useGetOtherUsers";
-import axios from "axios";
+import axiosInterceptors from "../axiosInterceptors";
 import toast from "react-hot-toast";
 import deleteIcon from "../../../assets/delete.png";
 import { setGroups, updateSelectedUser } from "../../../redux/userSlice";
@@ -50,9 +50,8 @@ function Message() {
         adminId: authUserId,
       };
 
-      axios.defaults.withCredentials = true;
-      const response = await axios.post(
-        "http://localhost:8080/api/group/create",
+      const response = await axiosInterceptors.post(
+        "/group/create",
         payload
       );
       toast.success(response.data.message);
@@ -63,8 +62,8 @@ function Message() {
   const deleteGroup = async (groupId) => {
     if (!groupId) return;
     try {
-      const response = await axios.delete(
-        `http://localhost:8080/api/group/${groupId}`,
+      const response = await axiosInterceptors.delete(
+        `/group/${groupId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -88,8 +87,8 @@ function Message() {
   const removeMemberFromGroup = async (groupId, memberId) => {
     if (!groupId || !memberId) return;
     try {
-      const response = await axios.delete(
-        `http://localhost:8080/api/group/${groupId}/member/${memberId}`,
+      const response = await axiosInterceptors.delete(
+        `/group/${groupId}/member/${memberId}`,
         {
           headers: {
             "Content-Type": "application/json",

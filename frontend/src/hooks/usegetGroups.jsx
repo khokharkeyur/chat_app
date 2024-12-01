@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios from "axios";
+import axiosInterceptors from "../components/app/axiosInterceptors";
 import { useDispatch } from "react-redux";
 import { setGroups } from "../redux/userSlice";
 
@@ -9,8 +9,7 @@ function useGetGroups() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        axios.defaults.withCredentials = true;
-        const res = await axios.get("http://localhost:8080/api/group/");
+        const res = await axiosInterceptors.get("/group/");
         dispatch(setGroups(res?.data?.groups));
       } catch (error) {
         console.error("Error fetching groups:", error);

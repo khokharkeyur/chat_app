@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios from "axios";
+import axiosInterceptors from "../components/app/axiosInterceptors";
 import { useDispatch, useSelector } from "react-redux";
 import { setMessages } from "../redux/messageSlice";
 const useGetMessages = () => {
@@ -8,9 +8,8 @@ const useGetMessages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        axios.defaults.withCredentials = true;
-        const res = await axios.get(
-          `http://localhost:8080/api/message/${selectedUser?._id}`
+        const res = await axiosInterceptors.get(
+          `/message/${selectedUser?._id}`
         );
         dispatch(setMessages(res.data));
       } catch (error) {}

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BiSearchAlt2 } from "react-icons/bi";
 import OtherUsers from "./OtherUsers";
-import axios from "axios";
+import axiosInterceptors from "../axiosInterceptors";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,7 +33,7 @@ function Sidebar() {
 
   const logoutHandler = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/user/logout`);
+      const res = await axiosInterceptors.get(`/user/logout`);
       toast.success(res.data.message);
       Cookies.remove("AccessToken", { path: "/" });
       Cookies.remove("RefreshToken", { path: "/" });

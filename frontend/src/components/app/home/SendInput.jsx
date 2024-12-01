@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoSend } from "react-icons/io5";
-import axios from "axios";
+import axiosInterceptors from "../axiosInterceptors";
 import { useDispatch, useSelector } from "react-redux";
 import { setMessages } from "../../../redux/messageSlice";
 
@@ -13,8 +13,8 @@ function SendInput() {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(
-        `http://localhost:8080/api/message/send/${selectedUser?._id}`,
+      const res = await axiosInterceptors.post(
+        `/message/send/${selectedUser?._id}`,
         { message },
         {
           headers: {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInterceptors from "../components/app/axiosInterceptors";
 import toast from "react-hot-toast";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -50,10 +50,8 @@ function SignupForm() {
       formData.append("gender", values.gender);
       if (values.image) formData.append("image", values.image);
 
-      const apiUrl =
-        "http://localhost:8080/api/user" +
-        (adminDetails ? "/profile/update" : "/register");
-      const method = adminDetails ? axios.put : axios.post;
+      const apiUrl = adminDetails ? "/user/profile/update" : "/user/register";
+      const method = adminDetails ? axiosInterceptors.put : axiosInterceptors.post;
 
       const res = await method(apiUrl, formData, {
         headers: {

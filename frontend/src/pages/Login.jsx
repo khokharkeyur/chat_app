@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInterceptors from "../components/app/axiosInterceptors";
 import React from "react";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
@@ -24,8 +24,8 @@ const Login = () => {
 
   const onSubmit = async (values, { resetForm }) => {
     try {
-      const res = await axios.post(
-        "http://localhost:8080/api/user/login",
+      const res = await axiosInterceptors.post(
+        "/user/login",
         values,
         {
           headers: {

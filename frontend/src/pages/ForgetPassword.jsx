@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
+import axiosInterceptors from "../components/app/axiosInterceptors";
 
 function ForgotPassword() {
   const initialValues = {
@@ -24,7 +24,7 @@ function ForgotPassword() {
     const { username, password, confirmPassword } = values;
 
     try {
-      const response = await axios.put(
+      const response = await axiosInterceptors.put(
         "http://localhost:8080/api/user/resetPassword",
         {
           username,
