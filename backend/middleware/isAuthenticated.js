@@ -8,13 +8,15 @@ const isAuthenticated = async (req, res, next) => {
       return res.status(401).json({ message: "User not authenticated." });
     }
     const token = authHeader.split(" ")[1];
-    const decode = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (!decode) {
-      return res.status(401).json({ message: "Invalid token." });
-    }
-    req.id = decode.userId;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    req.id = decoded.userId;
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      console.error("Token expired at:", error.expiredAt);
+      return res.status(401).json({ message: "Invalid token." });
+    }
     console.error("Authentication error:", error);
     return res.status(500).json({ message: "Internal server error." });
   }

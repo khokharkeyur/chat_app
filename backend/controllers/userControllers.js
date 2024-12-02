@@ -169,25 +169,41 @@ export const login = async (req, res) => {
       expiresIn: "7d",
     });
 
-    return res
-      .status(200)
-      .cookie("token", token, {
-        maxAge: 1 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: "strict",
-      })
-      .json({
-        token,
-        refreshToken,
-        _id: user._id,
-        username: user.username,
-        fullName: user.fullName,
-        profilePhoto: user.profilePhoto,
-      });
+    return res.status(200).json({
+      token,
+      refreshToken,
+      _id: user._id,
+      username: user.username,
+      fullName: user.fullName,
+      profilePhoto: user.profilePhoto,
+    });
   } catch (error) {
     console.log(error);
   }
 };
+
+export const refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token missing." });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET_KEY);
+    const newAccessToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1d" }
+    );
+
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    return res.status(401).json({ message: "Invalid refresh token." });
+  }
+};
+
 export const logout = (req, res) => {
   try {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({

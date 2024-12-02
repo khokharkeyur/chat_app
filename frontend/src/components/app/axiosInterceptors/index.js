@@ -24,11 +24,45 @@ axiosInterceptors.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      Cookies.remove("AccessToken");
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      error.response.data.message === "Invalid token." &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = Cookies.get("RefreshToken");
+        if (!refreshToken) {
+          console.error("Refresh token missing. Redirecting to login...");
+          Cookies.remove("AccessToken");
+          Cookies.remove("RefreshToken");
+          window.location.href = "/login";
+          return Promise.reject(error);
+        }
+
+        const response = await axios.post(`${baseURL}/user/refreshToken`, {
+          refreshToken,
+        });
+
+        const newAccessToken = response.data.accessToken;
+
+        Cookies.set("AccessToken", newAccessToken, { expires: 1});
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        return axiosInterceptors(originalRequest);
+      } catch (refreshError) {
+        console.error("Error refreshing token:", refreshError);
+        Cookies.remove("AccessToken");
+        Cookies.remove("RefreshToken");
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
     }
-    console.error("this error is ", error);
+
     return Promise.reject(error);
   }
 );
