@@ -34,8 +34,6 @@ function ForgotPassword() {
       );
 
       if (response.data.success) {
-        console.log("forget password completed");
-
         resetForm();
       }
     } catch (error) {
