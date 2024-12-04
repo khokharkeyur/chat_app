@@ -25,7 +25,7 @@ function ForgotPassword() {
 
     try {
       const response = await axiosInterceptors.put(
-        "http://localhost:8080/api/user/resetPassword",
+        "/user/resetPassword",
         {
           username,
           newPassword: password,
