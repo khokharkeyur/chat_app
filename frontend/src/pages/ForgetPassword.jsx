@@ -1,9 +1,12 @@
 import React from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useNavigate } from "react-router-dom";
 import axiosInterceptors from "../components/app/axiosInterceptors";
+import toast from "react-hot-toast";
 
 function ForgotPassword() {
+  const navigate = useNavigate();
   const initialValues = {
     username: "",
     password: "",
@@ -35,10 +38,12 @@ function ForgotPassword() {
 
       if (response.data.success) {
         resetForm();
+        toast.success(response.data.message);
+        navigate("/");
       }
     } catch (error) {
       console.error("Error occurred during password reset:", error);
-      // resetForm();
+      resetForm();
     }
   };
 
