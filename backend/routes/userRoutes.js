@@ -23,6 +23,6 @@ router.route("/admin/:id").get(isAuthenticated, getAdminDetails);
 router
   .route("/profile/update")
   .put(isAuthenticated, upload.single("image"), updateProfile);
-router.route("/resetPassword").put(resetPassword);
+router.route("/resetPassword").put(isAuthenticated, resetPassword);
 
 export default router;
