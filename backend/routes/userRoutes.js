@@ -8,6 +8,7 @@ import {
   register,
   updateProfile,
   refreshToken,
+  blockUser,
 } from "../controllers/userControllers.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
 import upload from "../utils/upload.js";
@@ -24,5 +25,7 @@ router
   .route("/profile/update")
   .put(isAuthenticated, upload.single("image"), updateProfile);
 router.route("/resetPassword").put(isAuthenticated, resetPassword);
+
+router.route("/block").put(isAuthenticated, blockUser);
 
 export default router;

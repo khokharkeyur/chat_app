@@ -248,3 +248,35 @@ export const getAdminDetails = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const blockUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const loggedInUserId = req.id;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const userToBlock = await User.findById(userId);
+    const loggedInUser = await User.findById(loggedInUserId);
+
+    if (!userToBlock) {
+      return res.status(404).json({ message: "User to block not found" });
+    }
+
+    if (loggedInUserId === userId) {
+      return res.status(400).json({ message: "You cannot block yourself" });
+    }
+    if (loggedInUser.blockedUsers.includes(userId)) {
+      return res.status(400).json({ message: "User is already blocked" });
+    }
+    loggedInUser.blockedUsers.push(userId);
+    await loggedInUser.save();
+
+    res.status(200).json({ message: "User blocked successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
