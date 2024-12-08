@@ -25,7 +25,20 @@ function Message() {
   function viewProfile() {
     if (!otherUsers) return;
   }
-
+  const handleBlockUser = async (userId) => {
+    try {
+      const res = await axiosInterceptors.put(
+        "/user/block",
+        { userId },
+      );
+      if (res.status === 200) {
+        console.log("User blocked successfully");
+      }
+  
+    } catch (error) {
+      console.error("Error blocking user:", error.response?.data?.message || error.message);
+    }
+  };
   function userclick(user) {
     setGroupMember((prevGroupMember) => {
       if (prevGroupMember.some((member) => member._id === user._id)) {
@@ -50,10 +63,7 @@ function Message() {
         adminId: authUserId,
       };
 
-      const response = await axiosInterceptors.post(
-        "/group/create",
-        payload
-      );
+      const response = await axiosInterceptors.post("/group/create", payload);
       toast.success(response.data.message);
     } catch (error) {
       console.error("Error creating group:", error);
@@ -62,14 +72,11 @@ function Message() {
   const deleteGroup = async (groupId) => {
     if (!groupId) return;
     try {
-      const response = await axiosInterceptors.delete(
-        `/group/${groupId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axiosInterceptors.delete(`/group/${groupId}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       dispatch(
         setGroups((prevGroups) =>
           prevGroups.filter((group) => group.id !== groupId)
@@ -170,7 +177,12 @@ function Message() {
                   <div className="modal-action">
                     <form method="dialog" className="w-full flex">
                       <div className="w-full flex gap-4">
-                        <p className="btn text-red-500">Block</p>
+                        <p
+                          className="btn text-red-500"
+                          onClick={() => handleBlockUser(selectedUser?._id)}
+                        >
+                          Block
+                        </p>
                         <p className="btn text-red-500">Report</p>
                       </div>
                       <button
