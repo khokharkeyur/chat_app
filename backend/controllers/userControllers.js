@@ -216,12 +216,20 @@ export const logout = (req, res) => {
 export const getOtherUsers = async (req, res) => {
   try {
     const loggedInUserId = req.id;
-    const otherUsers = await User.find({ _id: { $ne: loggedInUserId } }).select(
-      "-password"
-    );
+    const loggedInUser = await User.findById(loggedInUserId);
+    if (!loggedInUser) {
+      return res.status(404).json({ message: "Logged-in user not found" });
+    }
+    const blockedUsers = loggedInUser.blockedUsers || [];
+
+    const otherUsers = await User.find({
+      _id: { $ne: loggedInUserId, $nin: blockedUsers },
+    }).select("-password");
+
     return res.status(200).json(otherUsers);
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -242,6 +250,7 @@ export const getAdminDetails = async (req, res) => {
       fullName: admin.fullName,
       profilePhoto: admin.profilePhoto,
       gender: admin.gender,
+      blockedUsers: admin.blockedUsers,
     });
   } catch (error) {
     console.error(error);
