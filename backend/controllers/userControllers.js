@@ -289,3 +289,25 @@ export const blockUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getBlockedUsers = async (req, res) => {
+  try {
+    const loggedInUserId = req.id;
+
+    const user = await User.findById(loggedInUserId).populate(
+      "blockedUsers",
+      "-password"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      blockedUsers: user.blockedUsers,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

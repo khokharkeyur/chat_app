@@ -9,6 +9,7 @@ import {
   updateProfile,
   refreshToken,
   blockUser,
+  getBlockedUsers,
 } from "../controllers/userControllers.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
 import upload from "../utils/upload.js";
@@ -27,5 +28,6 @@ router
 router.route("/resetPassword").put(isAuthenticated, resetPassword);
 
 router.route("/block").put(isAuthenticated, blockUser);
+router.route("/blockedUsers").get(isAuthenticated, getBlockedUsers);
 
 export default router;
