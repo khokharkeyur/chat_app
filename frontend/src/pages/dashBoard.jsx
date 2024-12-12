@@ -10,10 +10,12 @@ function Dashboard() {
   const navigate = useNavigate();
 
   const [adminDetails, setAdminDetails] = useState();
+  const [blockedUsers, setBlockedUsers] = useState([]);
   const { authUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const dialogRef = useRef(null);
+  const blockedUserDialogRef = useRef(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -36,14 +38,24 @@ function Dashboard() {
     }
   };
 
+  const openBlockedUserDialog = () => {
+    if (blockedUserDialogRef.current) {
+      blockedUserDialogRef.current.showModal();
+    }
+    handleClose();
+  };
+
+  const closeBlockedUserDialog = () => {
+    if (blockedUserDialogRef.current) {
+      blockedUserDialogRef.current.close();
+    }
+  };
   useEffect(() => {
     const fetchAdminDetails = async () => {
       if (!authUser?._id) return;
 
       try {
-        const res = await axiosInterceptors.get(
-          `/user/admin/${authUser._id}`
-        );
+        const res = await axiosInterceptors.get(`/user/admin/${authUser._id}`);
         setAdminDetails(res?.data);
       } catch (error) {
         console.log(error);
@@ -52,6 +64,19 @@ function Dashboard() {
 
     fetchAdminDetails();
   }, [authUser]);
+
+  const fetchBlockedUsers = async () => {
+    try {
+      const response = await axiosInterceptors.get("/user/blockedUsers");
+      setBlockedUsers(response.data.blockedUsers);
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlockedUsers();
+  }, []);
 
   const handleEditProfile = () => {
     navigate("/signup", { state: { adminDetails } });
@@ -120,6 +145,9 @@ function Dashboard() {
           <MenuItem onClick={() => navigate("/forgetPassword")}>
             <Avatar /> Change Password
           </MenuItem>
+          <MenuItem onClick={openBlockedUserDialog}>
+            <Avatar /> Blocked User
+          </MenuItem>
           <Divider />
         </Menu>
       </div>
@@ -146,6 +174,51 @@ function Dashboard() {
           )}
           <div className="modal-action">
             <button className="btn flex justify-end" onClick={closeDialog}>
+              Close
+            </button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog
+        ref={blockedUserDialogRef}
+        className="modal modal-bottom sm:modal-middle"
+      >
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Blocked Users</h3>
+          {blockedUsers.length > 0 ? (
+            blockedUsers.map((user) => (
+              <div
+                key={user._id}
+                className=" rounded-full flex justify-between mx-3 my-3"
+              >
+                <div className="flex">
+                  <img
+                    src={user.profilePhoto}
+                    alt={user.fullName}
+                    className="mr-4 w-12"
+                  />
+                  <p className="pt-2 pb-4">{user.fullName}</p>
+                </div>
+                <button
+                  className="btn"
+                  onClick={() =>
+                    console.log("click")
+                    
+                  }
+                >
+                  Unblock
+                </button>
+              </div>
+            ))
+          ) : (
+            <p>No blocked users found.</p>
+          )}
+          <div className="modal-action w-full">
+            <button
+              className="btn flex w-full"
+              onClick={closeBlockedUserDialog}
+            >
               Close
             </button>
           </div>
