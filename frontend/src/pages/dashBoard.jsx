@@ -94,7 +94,7 @@ function Dashboard() {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+            <Avatar sx={{ width: 32, height: 32 }}>{adminDetails?.fullName?.charAt(0)}</Avatar>
           </IconButton>
         </Tooltip>
         <Menu
