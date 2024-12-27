@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { IoSend } from "react-icons/io5";
-import axiosInterceptors from "../axiosInterceptors";
+import axiosInterceptors from "../../axiosInterceptors";
 import { useDispatch, useSelector } from "react-redux";
-import { setMessages } from "../../../redux/messageSlice";
+import { setMessages } from "../../../../redux/messageSlice";
 
 function SendInput() {
   const [message, setMessage] = useState("");

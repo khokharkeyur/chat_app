@@ -1,6 +1,6 @@
 import React from "react";
-import Sidebar from "./Sidebar";
-import Message from "./Message";
+import Sidebar from "./sidebar/Sidebar";
+import Message from "./message";
 
 function index() {
   return (

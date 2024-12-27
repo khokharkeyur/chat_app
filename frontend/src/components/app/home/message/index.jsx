@@ -2,11 +2,11 @@ import React from "react";
 import SendInput from "./SendInput";
 import ManyMessage from "./ManyMessage";
 import { useDispatch, useSelector } from "react-redux";
-import useGetOtherUsers from "../../../hooks/useGetOtherUsers";
-import axiosInterceptors from "../axiosInterceptors";
+import useGetOtherUsers from "../../../../hooks/useGetOtherUsers";
+import axiosInterceptors from "../../axiosInterceptors";
 import toast from "react-hot-toast";
-import deleteIcon from "../../../assets/delete.png";
-import { setGroups, updateSelectedUser } from "../../../redux/userSlice";
+import deleteIcon from "../../../../assets/delete.png";
+import { setGroups, updateSelectedUser } from "../../../../redux/userSlice";
 
 function Message() {
   const { selectedUser, authUser, otherUsers } = useSelector(

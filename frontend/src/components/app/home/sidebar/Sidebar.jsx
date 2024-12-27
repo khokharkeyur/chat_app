@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BiSearchAlt2 } from "react-icons/bi";
 import OtherUsers from "./OtherUsers";
-import axiosInterceptors from "../axiosInterceptors";
+import axiosInterceptors from "../../axiosInterceptors";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,7 +9,7 @@ import {
   setAuthUser,
   setOtherUsers,
   setSelectedUser,
-} from "../../../redux/userSlice";
+} from "../../../../redux/userSlice";
 import Cookies from "js-cookie";
 
 function Sidebar() {
