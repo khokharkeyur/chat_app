@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setAuthUser,
+  setGroups,
   setOtherUsers,
   setSelectedUser,
 } from "../../../../redux/userSlice";
@@ -14,20 +15,26 @@ import Cookies from "js-cookie";
 
 function Sidebar() {
   const [search, setSearch] = useState("");
-  const { otherUsers, searchUser } = useSelector((store) => store.user);
+  const { otherUsers, Groups, searchUser } = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const naviget = useNavigate();
 
   const searchSubmitHandler = (e) => {
     e.preventDefault();
-    const conversationUser = otherUsers?.find((user) =>
-      user.fullName.toLowerCase().includes(search.toLowerCase())
+    const searchTerm = search.toLowerCase();
+    const filteredUsers = otherUsers?.filter((user) =>
+      user.fullName.toLowerCase().includes(searchTerm)
     );
-    if (conversationUser) {
-      dispatch(setOtherUsers([conversationUser]));
+    const filteredGroups = Groups?.filter((group) =>
+      group.name.toLowerCase().includes(searchTerm)
+    );
+    
+    if (filteredUsers.length > 0 || filteredGroups.length > 0) {
+      dispatch(setOtherUsers(filteredUsers));
+      dispatch(setGroups(filteredGroups));
     } else {
       dispatch(setOtherUsers(otherUsers));
-      toast.error("User not found!");
+      toast.error("User or group not found!");
     }
   };
 
