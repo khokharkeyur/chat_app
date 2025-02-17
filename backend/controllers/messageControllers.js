@@ -56,3 +56,62 @@ export const getMessage = async (req, res) => {
     console.log(error);
   }
 };
+
+export const deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    await Conversation.updateOne(
+      { messages: messageId },
+      { $pull: { messages: messageId } }
+    );
+
+    await Message.findByIdAndDelete(messageId);
+
+    const receiverSocketId = getReceiverSocketId(message.receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("deleteMessage", { messageId });
+    }
+
+    return res.status(200).json({ message: "Message deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const editMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { message: newMessageContent } = req.body;
+
+    if (!newMessageContent || newMessageContent.trim() === "") {
+      return res.status(400).json({ error: "Message content is required" });
+    }
+
+    const updatedMessage = await Message.findByIdAndUpdate(
+      messageId,
+      { message: newMessageContent },
+      { new: true }
+    );
+
+    if (!updatedMessage) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const receiverSocketId = getReceiverSocketId(updatedMessage.receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("editMessage", updatedMessage);
+    }
+
+    return res.status(200).json({ updatedMessage });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};

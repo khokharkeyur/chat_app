@@ -3,11 +3,13 @@ import { useSelector } from "react-redux";
 import downArrow from "../../../../assets/down-arrow.svg";
 import MessagePopup from "./MessagePopup";
 import { Popover } from "@mui/material";
+import axiosInterceptors from "../../axiosInterceptors";
 
-function InnerMessage({ message }) {
+function InnerMessage({ message, onEdit, onDelete }) {
   const chatRef = useRef();
   const { authUser, selectedUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = useState(null);
+  const { socket } = useSelector((store) => store.socket);
 
   const createdAt = new Date(message.createdAt);
   const formattedTime = createdAt.toTimeString().split(" ")[0];
@@ -24,16 +26,37 @@ function InnerMessage({ message }) {
     setAnchorEl(null);
   };
 
-  const handleEdit = () => {
-    console.log("Edit message");
-    handleClose();
-  };
+  const handleEdit = async () => {
+    const newMessageContent = prompt(
+      "Enter the new message content:",
+      message.message
+    );
+    if (newMessageContent && newMessageContent.trim() !== "") {
+      try {
+        socket.emit("editMessage", message._id, newMessageContent);
 
-  const handleDelete = () => {
-    console.log("Delete message");
-    handleClose();
-  };
+        await axiosInterceptors.put(`/messages/edit/${message._id}`, {
+          message: newMessageContent,
+        });
 
+        onEdit(message._id, newMessageContent);
+      } catch (error) {
+        console.error("Error editing message:", error);
+      }
+    }
+  };
+  const handleDelete = async () => {
+    try {
+      
+      socket.emit("deleteMessage", message._id);
+
+      await axiosInterceptors.delete(`/messages/delete/${message._id}`);
+
+      onDelete(message._id);
+    } catch (error) {
+      console.error("Error deleting message:", error);
+    }
+  };
   const handleEmoji = () => {
     console.log("Add emoji to message");
     handleClose();
@@ -93,8 +116,8 @@ function InnerMessage({ message }) {
             anchorEl={anchorEl}
             open={open}
             onClose={handleClose}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onEdit={() => handleEdit(message._id)}
+            onDelete={() => handleDelete(message._id)}
             onEmoji={handleEmoji}
           />
         </Popover>
