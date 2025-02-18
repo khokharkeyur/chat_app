@@ -3,13 +3,11 @@ import { useSelector } from "react-redux";
 import downArrow from "../../../../assets/down-arrow.svg";
 import MessagePopup from "./MessagePopup";
 import { Popover } from "@mui/material";
-import axiosInterceptors from "../../axiosInterceptors";
 
 function InnerMessage({ message, onEdit, onDelete }) {
   const chatRef = useRef();
   const { authUser, selectedUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = useState(null);
-  const { socket } = useSelector((store) => store.socket);
 
   const createdAt = new Date(message.createdAt);
   const formattedTime = createdAt.toTimeString().split(" ")[0];
@@ -33,12 +31,6 @@ function InnerMessage({ message, onEdit, onDelete }) {
     );
     if (newMessageContent && newMessageContent.trim() !== "") {
       try {
-        socket.emit("editMessage", message._id, newMessageContent);
-
-        await axiosInterceptors.put(`/messages/edit/${message._id}`, {
-          message: newMessageContent,
-        });
-
         onEdit(message._id, newMessageContent);
       } catch (error) {
         console.error("Error editing message:", error);
@@ -47,11 +39,6 @@ function InnerMessage({ message, onEdit, onDelete }) {
   };
   const handleDelete = async () => {
     try {
-      
-      socket.emit("deleteMessage", message._id);
-
-      await axiosInterceptors.delete(`/messages/delete/${message._id}`);
-
       onDelete(message._id);
     } catch (error) {
       console.error("Error deleting message:", error);

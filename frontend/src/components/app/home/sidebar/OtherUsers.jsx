@@ -12,7 +12,7 @@ function OtherUsers() {
   const authUser = useSelector((store) => store.user);
 
   const groupMembers = Array.isArray(groups)
-    ? groups.flatMap(
+    ? groups?.flatMap(
         (group) => group?.members.map((member) => member?.fullName) || []
       )
     : [];
@@ -25,8 +25,8 @@ function OtherUsers() {
   return (
     <div className="overflow-auto flex-1 sm:block">
       {isAuthUserInGroup &&
-        groups.map((group) => <OtherUser key={group._id} user={group} />)}
-      {otherUsers.map((user) => (
+        groups?.map((group) => <OtherUser key={group._id} user={group} />)}
+      {otherUsers?.map((user) => (
         <OtherUser key={user._id} user={user} />
       ))}
     </div>

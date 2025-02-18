@@ -15,7 +15,7 @@ import Cookies from "js-cookie";
 
 function Sidebar() {
   const [search, setSearch] = useState("");
-  const { otherUsers, Groups, searchUser } = useSelector((store) => store.user);
+  const { otherUsers, Groups } = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const naviget = useNavigate();
 
@@ -28,7 +28,7 @@ function Sidebar() {
     const filteredGroups = Groups?.filter((group) =>
       group.name.toLowerCase().includes(searchTerm)
     );
-    
+
     if (filteredUsers.length > 0 || filteredGroups.length > 0) {
       dispatch(setOtherUsers(filteredUsers));
       dispatch(setGroups(filteredGroups));

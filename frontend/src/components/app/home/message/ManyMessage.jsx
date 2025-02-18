@@ -11,12 +11,25 @@ function ManyMessage() {
   useGetRealTimeMessage();
   const dispatch = useDispatch();
   const { messages } = useSelector((store) => store.message);
+  const { socket } = useSelector((store) => store.socket);
 
-  const handleEditMessage = async (messageId, newContent) => {
+  const handleEditMessage = async (messageId, newMessageContent) => {
     try {
-      const response = await axiosInterceptors.put(`/message/edit/${messageId}`, {
-        message: newContent,
-      });
+      // const response = await axiosInterceptors.put(
+      //   `/message/edit/${messageId}`,
+      //   {
+      //     message: newContent,
+      //   }
+      // );
+      socket.emit("editMessage", messageId, newMessageContent);
+
+      const response = await axiosInterceptors.put(
+        `/messages/edit/${messageId}`,
+        {
+          message: newMessageContent,
+        }
+      );
+
       dispatch(editMessage(response.data));
     } catch (error) {
       console.error("Error editing message:", error);
@@ -25,6 +38,7 @@ function ManyMessage() {
 
   const handleDeleteMessage = async (messageId) => {
     try {
+      socket.emit("deleteMessage", messageId);
       await axiosInterceptors.delete(`/message/delete/${messageId}`);
       dispatch(deleteMessage(messageId));
     } catch (error) {
