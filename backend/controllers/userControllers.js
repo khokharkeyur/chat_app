@@ -108,9 +108,8 @@ export const updateProfile = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { username, newPassword, confirmPassword } = req.body;
-
-    if (!username || !newPassword || !confirmPassword) {
+    const { userId, newPassword, confirmPassword } = req.body;
+    if (!userId || !newPassword || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -118,7 +117,7 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

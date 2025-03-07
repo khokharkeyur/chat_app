@@ -4,17 +4,16 @@ import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import axiosInterceptors from "../components/app/axiosInterceptors";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 function ForgotPassword() {
+  const { authUser } = useSelector((store) => store.user);
   const navigate = useNavigate();
   const initialValues = {
-    username: "",
     password: "",
     confirmPassword: "",
   };
-
   const validationSchema = Yup.object({
-    username: Yup.string().required("Username is required"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters long")
       .required("Password is required"),
@@ -24,17 +23,15 @@ function ForgotPassword() {
   });
 
   const onSubmit = async (values, { resetForm }) => {
-    const { username, password, confirmPassword } = values;
+    const { password, confirmPassword } = values;
 
     try {
-      const response = await axiosInterceptors.put(
-        "/user/resetPassword",
-        {
-          username,
-          newPassword: password,
-          confirmPassword,
-        }
-      );
+      const response = await axiosInterceptors.put("/user/resetPassword", {
+        // username,
+        userId: authUser._id,
+        newPassword: password,
+        confirmPassword,
+      });
 
       if (response.data.success) {
         resetForm();
@@ -58,22 +55,6 @@ function ForgotPassword() {
             onSubmit={onSubmit}
           >
             <Form>
-              <div>
-                <label className="label p-2">
-                  <span className="text-base label-text">Username</span>
-                </label>
-                <Field
-                  type="text"
-                  name="username"
-                  className="w-full input input-bordered h-10"
-                  placeholder="Username"
-                />
-                <ErrorMessage
-                  name="username"
-                  component="div"
-                  className="text-red-600"
-                />
-              </div>
               <div>
                 <label className="label p-2">
                   <span className="text-base label-text">New Password</span>
@@ -107,6 +88,7 @@ function ForgotPassword() {
                 />
               </div>
               <div>
+                <p className="text-center my-2"></p>
                 <button
                   type="submit"
                   className="btn btn-block btn-sm mt-4 border border-slate-700"
