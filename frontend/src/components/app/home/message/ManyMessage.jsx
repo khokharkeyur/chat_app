@@ -4,12 +4,10 @@ import useGetMessages from "../../../../hooks/useGetMessages";
 import { useSelector, useDispatch } from "react-redux";
 import useGetRealTimeMessage from "../../../../hooks/useGetRealTimeMessage";
 import axiosInterceptors from "../../axiosInterceptors/index";
-import { editMessage, deleteMessage } from "../../../../redux/messageSlice";
 
 function ManyMessage() {
   useGetMessages();
   useGetRealTimeMessage();
-  const dispatch = useDispatch();
   const { messages } = useSelector((store) => store.message);
   const { socket } = useSelector((store) => store.socket);
 
@@ -23,14 +21,9 @@ function ManyMessage() {
       // );
       socket.emit("editMessage", messageId, newMessageContent);
 
-      const response = await axiosInterceptors.put(
-        `/messages/edit/${messageId}`,
-        {
-          message: newMessageContent,
-        }
-      );
-
-      dispatch(editMessage(response.data));
+      await axiosInterceptors.put(`/messages/edit/${messageId}`, {
+        message: newMessageContent,
+      });
     } catch (error) {
       console.error("Error editing message:", error);
     }
@@ -40,7 +33,6 @@ function ManyMessage() {
     try {
       socket.emit("deleteMessage", messageId);
       await axiosInterceptors.delete(`/message/delete/${messageId}`);
-      dispatch(deleteMessage(messageId));
     } catch (error) {
       console.error("Error deleting message:", error);
     }
