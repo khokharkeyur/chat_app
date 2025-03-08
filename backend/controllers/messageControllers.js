@@ -89,7 +89,6 @@ export const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
     const { message: newMessageContent } = req.body;
-
     if (!newMessageContent || newMessageContent.trim() === "") {
       return res.status(400).json({ error: "Message content is required" });
     }

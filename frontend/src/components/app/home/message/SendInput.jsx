@@ -1,29 +1,52 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoSend } from "react-icons/io5";
 import axiosInterceptors from "../../axiosInterceptors";
 import { useDispatch, useSelector } from "react-redux";
-import { setMessages } from "../../../../redux/messageSlice";
+import { setEditMessage, setMessages } from "../../../../redux/messageSlice";
 
 function SendInput() {
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
   const { selectedUser } = useSelector((store) => store.user);
-  const { messages } = useSelector((store) => store.message);
+  const { messages, editMessage } = useSelector((store) => store.message);
+  const { socket } = useSelector((store) => store.socket);
+
+  useEffect(() => {
+    if (editMessage) {
+      setMessage(editMessage.message);
+    }
+  }, [editMessage]);
+  useEffect(() => {
+    if (message === "") {
+      dispatch(setEditMessage(null));
+      setMessage("");
+    }
+  }, [message]);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    if (!message.trim()) return;
     try {
-      const res = await axiosInterceptors.post(
-        `/message/send/${selectedUser?._id}`,
-        { message },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-      dispatch(setMessages([...messages, res?.data?.newMessage]));
+      if (editMessage) {
+        socket.emit("editMessage", editMessage._id, message);
+
+        await axiosInterceptors.put(`/message/edit/${editMessage._id}`, {
+          message: message,
+        });
+        dispatch(setEditMessage(null));
+      } else {
+        const res = await axiosInterceptors.post(
+          `/message/send/${selectedUser?._id}`,
+          { message },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+        dispatch(setMessages([...messages, res?.data?.newMessage]));
+      }
     } catch (error) {
       console.log(error);
     }

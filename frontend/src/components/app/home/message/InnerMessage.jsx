@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import downArrow from "../../../../assets/down-arrow.svg";
 import MessagePopup from "./MessagePopup";
 import { Popover } from "@mui/material";
+import { setEditMessage } from "../../../../redux/messageSlice";
 
 function InnerMessage({ message, onEdit, onDelete }) {
   const chatRef = useRef();
+  const dispatch = useDispatch();
   const { authUser, selectedUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -25,17 +27,19 @@ function InnerMessage({ message, onEdit, onDelete }) {
   };
 
   const handleEdit = async () => {
-    const newMessageContent = prompt(
-      "Enter the new message content:",
-      message.message
-    );
-    if (newMessageContent && newMessageContent.trim() !== "") {
-      try {
-        onEdit(message._id, newMessageContent);
-      } catch (error) {
-        console.error("Error editing message:", error);
-      }
-    }
+    // const newMessageContent = prompt(
+    //   "Enter the new message content:",
+    //   message.message
+    // );
+    // if (newMessageContent && newMessageContent.trim() !== "") {
+    //   try {
+    //     onEdit(message._id, newMessageContent);
+    //   } catch (error) {
+    //     console.error("Error editing message:", error);
+    //   }
+    // }
+    dispatch(setEditMessage(message));
+    handleClose();
   };
   const handleDelete = async () => {
     try {

@@ -1,5 +1,10 @@
 import express from "express";
-import { deleteMessage, editMessage, getMessage, sendMessage } from "../controllers/messageControllers.js";
+import {
+  deleteMessage,
+  editMessage,
+  getMessage,
+  sendMessage,
+} from "../controllers/messageControllers.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
 
 const router = express.Router();
