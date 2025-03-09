@@ -11,24 +11,6 @@ function ManyMessage() {
   const { messages } = useSelector((store) => store.message);
   const { socket } = useSelector((store) => store.socket);
 
-  const handleEditMessage = async (messageId, newMessageContent) => {
-    try {
-      // const response = await axiosInterceptors.put(
-      //   `/message/edit/${messageId}`,
-      //   {
-      //     message: newContent,
-      //   }
-      // );
-      socket.emit("editMessage", messageId, newMessageContent);
-
-      await axiosInterceptors.put(`/messages/edit/${messageId}`, {
-        message: newMessageContent,
-      });
-    } catch (error) {
-      console.error("Error editing message:", error);
-    }
-  };
-
   const handleDeleteMessage = async (messageId) => {
     try {
       socket.emit("deleteMessage", messageId);
@@ -46,7 +28,6 @@ function ManyMessage() {
             <InnerMessage
               key={message._id}
               message={message}
-              onEdit={handleEditMessage}
               onDelete={handleDeleteMessage}
             />
           );

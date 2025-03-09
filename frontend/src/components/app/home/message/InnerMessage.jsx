@@ -5,10 +5,11 @@ import MessagePopup from "./MessagePopup";
 import { Popover } from "@mui/material";
 import { setEditMessage } from "../../../../redux/messageSlice";
 
-function InnerMessage({ message, onEdit, onDelete }) {
+function InnerMessage({ message, onDelete }) {
   const chatRef = useRef();
   const dispatch = useDispatch();
   const { authUser, selectedUser } = useSelector((store) => store.user);
+  const { editMessage } = useSelector((store) => store.message);
   const [anchorEl, setAnchorEl] = useState(null);
 
   const createdAt = new Date(message.createdAt);
@@ -27,17 +28,6 @@ function InnerMessage({ message, onEdit, onDelete }) {
   };
 
   const handleEdit = async () => {
-    // const newMessageContent = prompt(
-    //   "Enter the new message content:",
-    //   message.message
-    // );
-    // if (newMessageContent && newMessageContent.trim() !== "") {
-    //   try {
-    //     onEdit(message._id, newMessageContent);
-    //   } catch (error) {
-    //     console.error("Error editing message:", error);
-    //   }
-    // }
     dispatch(setEditMessage(message));
     handleClose();
   };
@@ -55,6 +45,8 @@ function InnerMessage({ message, onEdit, onDelete }) {
 
   const open = Boolean(anchorEl);
   const id = open ? "message-popup" : undefined;
+
+  const isEditing = editMessage?._id === message._id;
 
   return (
     <div
@@ -79,9 +71,14 @@ function InnerMessage({ message, onEdit, onDelete }) {
       <div
         className={`chat-bubble group relative pr-8 py-2 px-4 rounded-lg text-left ${
           message?.senderId !== authUser?._id ? "bg-gray-200 text-black" : ""
-        }`}
+        } ${isEditing ? "border-2 border-blue-500 shadow-lg" : ""}`}
       >
         {message?.message}
+        {isEditing && (
+          <span className="text-xs text-blue-500 font-semibold">
+            (Editing...)
+          </span>
+        )}
         <span
           className="w-5 h-5 ml-2 opacity-0 cursor-pointer transition-opacity duration-200 group-hover:opacity-100 absolute right-0 top-4 transform -translate-y-1/2 text-xs"
           onClick={handleClick}
