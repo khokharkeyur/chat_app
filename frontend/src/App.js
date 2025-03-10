@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
 import { setSocket } from "./redux/socketSlice";
 import { setOnlineUsers } from "./redux/userSlice";
-import PrivateRoutes from "./components/ProtectedRoute";
+import PrivateRoutes from "./components/PrivateRoutes";
 
 const router = createBrowserRouter([
   {

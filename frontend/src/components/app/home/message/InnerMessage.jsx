@@ -106,6 +106,7 @@ function InnerMessage({ message, onDelete }) {
             onClose={handleClose}
             onEdit={() => handleEdit(message._id)}
             onDelete={() => handleDelete(message._id)}
+            authUser={authUser?._id === message?.senderId}
             onEmoji={handleEmoji}
           />
         </Popover>

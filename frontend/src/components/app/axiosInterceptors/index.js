@@ -29,7 +29,7 @@ axiosInterceptors.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 401 &&
-      error.response.data.message === "Invalid token." &&
+      error.response.data.message === "User not authenticated." &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
@@ -49,8 +49,7 @@ axiosInterceptors.interceptors.response.use(
         });
 
         const newAccessToken = response.data.accessToken;
-
-        Cookies.set("AccessToken", newAccessToken, { expires: 1});
+        Cookies.set("AccessToken", newAccessToken, { expires: 1 });
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return axiosInterceptors(originalRequest);

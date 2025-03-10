@@ -1,7 +1,15 @@
 import React from "react";
 import { MenuItem, MenuList, Popover } from "@mui/material";
 
-function MessagePopup({ anchorEl, open, onClose, onEdit, onDelete, onEmoji }) {
+function MessagePopup({
+  anchorEl,
+  open,
+  onClose,
+  onEdit,
+  onDelete,
+  onEmoji,
+  authUser,
+}) {
   return (
     <Popover
       open={open}
@@ -18,8 +26,18 @@ function MessagePopup({ anchorEl, open, onClose, onEdit, onDelete, onEmoji }) {
     >
       <MenuList>
         <MenuItem onClick={onEmoji}>Add Emoji</MenuItem>
-        <MenuItem onClick={onEdit}>Edit</MenuItem>
-        <MenuItem onClick={onDelete}>Delete</MenuItem>
+        <MenuItem
+          onClick={onEdit}
+          sx={{ display: authUser ? "block" : "none" }}
+        >
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={onDelete}
+          sx={{ display: authUser ? "block" : "none" }}
+        >
+          Delete
+        </MenuItem>
       </MenuList>
     </Popover>
   );
