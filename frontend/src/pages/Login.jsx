@@ -24,16 +24,12 @@ const Login = () => {
 
   const onSubmit = async (values, { resetForm }) => {
     try {
-      const res = await axiosInterceptors.post(
-        "/user/login",
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const res = await axiosInterceptors.post("/user/login", values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
       const { token, refreshToken, ...userData } = res.data;
       Cookies.set("AccessToken", token, { expires: 1, path: "/" });
       Cookies.set("RefreshToken", refreshToken, { expires: 7, path: "/" });

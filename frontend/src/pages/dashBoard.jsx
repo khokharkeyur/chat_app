@@ -94,7 +94,9 @@ function Dashboard() {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>{adminDetails?.fullName?.charAt(0)}</Avatar>
+            <Avatar sx={{ width: 32, height: 32 }}>
+              {adminDetails?.fullName?.charAt(0)}
+            </Avatar>
           </IconButton>
         </Tooltip>
         <Menu
@@ -200,13 +202,7 @@ function Dashboard() {
                   />
                   <p className="pt-2 pb-4">{user.fullName}</p>
                 </div>
-                <button
-                  className="btn"
-                  onClick={() =>
-                    console.log("click")
-                    
-                  }
-                >
+                <button className="btn" onClick={() => console.log("click")}>
                   Unblock
                 </button>
               </div>

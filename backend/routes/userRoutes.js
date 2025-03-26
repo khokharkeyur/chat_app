@@ -19,7 +19,7 @@ const router = express.Router();
 
 router.route("/register").post(upload.single("image"), register);
 router.route("/login").post(login);
-router.route("/refreshToken").post(refreshToken); 
+router.route("/refreshToken").post(refreshToken);
 router.route("/logout").get(logout);
 router.route("/").get(isAuthenticated, getOtherUsers);
 router.route("/admin/:id").get(isAuthenticated, getAdminDetails);

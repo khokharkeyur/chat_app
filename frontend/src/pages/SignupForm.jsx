@@ -51,7 +51,9 @@ function SignupForm() {
       if (values.image) formData.append("image", values.image);
 
       const apiUrl = adminDetails ? "/user/profile/update" : "/user/register";
-      const method = adminDetails ? axiosInterceptors.put : axiosInterceptors.post;
+      const method = adminDetails
+        ? axiosInterceptors.put
+        : axiosInterceptors.post;
 
       const res = await method(apiUrl, formData, {
         headers: {
@@ -76,7 +78,7 @@ function SignupForm() {
   };
 
   return (
-    <div className="min-w-96 mx-auto">
+    <div className="flex justify-center items-center min-h-screen">
       <div className="w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border border-gray-100">
         <h1 className="text-3xl font-bold text-center">Signup</h1>
         <Formik
