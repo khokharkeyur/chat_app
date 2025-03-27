@@ -82,6 +82,20 @@ function Dashboard() {
     navigate("/signup", { state: { adminDetails } });
   };
 
+  const handleUnBlock = async (userId) => {
+    try {
+  
+      const response = await axiosInterceptors.put("/user/unBlock", { userId });
+  
+      if (response.status === 200) {
+        console.log(response.data.message);
+        setBlockedUsers((prev) => prev.filter((user) => user._id !== userId));
+      }
+    } catch (error) {
+      console.error("Error unblocking user:", error.response?.data?.message || error.message);
+    }
+  }
+
   return (
     <div>
       <div className="w-full flex justify-end">
@@ -202,7 +216,10 @@ function Dashboard() {
                   />
                   <p className="pt-2 pb-4">{user.fullName}</p>
                 </div>
-                <button className="btn" onClick={() => console.log("click")}>
+                <button
+                  className="btn"
+                  onClick={() => handleUnBlock(user._id)}
+                >
                   Unblock
                 </button>
               </div>
