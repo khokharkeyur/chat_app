@@ -12,24 +12,20 @@ import {
   getBlockedUsers,
   unblockUser,
 } from "../controllers/userControllers.js";
-import isAuthenticated from "../middleware/isAuthenticated.js";
 import upload from "../utils/upload.js";
 
 const router = express.Router();
 
-router.route("/register").post(upload.single("image"), register);
-router.route("/login").post(login);
-router.route("/refreshToken").post(refreshToken);
-router.route("/logout").get(logout);
-router.route("/").get(isAuthenticated, getOtherUsers);
-router.route("/admin/:id").get(isAuthenticated, getAdminDetails);
-router
-  .route("/profile/update")
-  .put(isAuthenticated, upload.single("image"), updateProfile);
-router.route("/resetPassword").put(isAuthenticated, resetPassword);
-
-router.route("/block").put(isAuthenticated, blockUser);
-router.route("/unBlock").put(isAuthenticated, unblockUser);
-router.route("/blockedUsers").get(isAuthenticated, getBlockedUsers);
+router.post("/register", upload.single("image"), register);
+router.post("/login", login);
+router.post("/refreshToken", refreshToken);
+router.get("/logout", logout);
+router.get("/", getOtherUsers);
+router.get("/admin/:id", getAdminDetails);
+router.put("/profile/update", upload.single("image"), updateProfile);
+router.put("/resetPassword", resetPassword);
+router.put("/block", blockUser);
+router.put("/unBlock", unblockUser);
+router.get("/blockedUsers", getBlockedUsers);
 
 export default router;
