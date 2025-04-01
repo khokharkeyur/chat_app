@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import firebase from "../config/firebase.config.js";
 
+const OTP_STORAGE = {};
+
 export const register = async (req, res) => {
   try {
     const { fullName, username, password, confirmPassword, gender } = req.body;
@@ -108,8 +110,8 @@ export const updateProfile = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { userId, newPassword, confirmPassword } = req.body;
-    if (!userId || !newPassword || !confirmPassword) {
+    const { userId, phoneNumber, otp, newPassword, confirmPassword } = req.body;
+    if ((!userId && !phoneNumber) || !newPassword || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -117,7 +119,19 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const user = await User.findById(userId);
+    let user;
+
+    if (userId) {
+      user = await User.findById(userId);
+    } else if (phoneNumber) {
+      if (!otp || OTP_STORAGE[phoneNumber] !== otp) {
+        return res.status(400).json({ message: "Invalid or expired OTP" });
+      }
+      delete OTP_STORAGE[phoneNumber];
+
+      user = await User.findOne({ phoneNumber });
+    }
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -161,7 +175,7 @@ export const login = async (req, res) => {
       userId: user._id,
     };
 
-    const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {
+    const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {
       expiresIn: "1d",
     });
     const refreshToken = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {
@@ -333,6 +347,58 @@ export const unblockUser = async (req, res) => {
     res.status(200).json({ message: "User unblocked successfully" });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const sendOtp = async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) {
+      return res.status(400).json({ message: "Phone number is required" });
+    }
+
+    const user = await User.findOne({ phoneNumber });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+
+    OTP_STORAGE[phoneNumber] = otp;
+    setTimeout(() => delete OTP_STORAGE[phoneNumber], 5 * 60 * 1000);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP generated successfully",
+      otp,
+    });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const verifyOtp = async (req, res) => {
+  try {
+    const { phoneNumber, otp } = req.body;
+
+    if (!phoneNumber || !otp) {
+      return res
+        .status(400)
+        .json({ message: "Phone number and OTP are required" });
+    }
+
+    if (!OTP_STORAGE[phoneNumber] || OTP_STORAGE[phoneNumber] !== otp) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

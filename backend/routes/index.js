@@ -8,6 +8,9 @@ const authenticatedPaths = [
   "/user/login",
   "/user/refreshToken",
   "/user/logout",
+  "/user/sendOtp",
+  "/user/verifyOtp",
+  "/user/resetPassword",
 ];
 
 export const setupRoutes = (app) => {

@@ -11,6 +11,8 @@ import {
   blockUser,
   getBlockedUsers,
   unblockUser,
+  sendOtp,
+  verifyOtp,
 } from "../controllers/userControllers.js";
 import upload from "../utils/upload.js";
 
@@ -27,5 +29,7 @@ router.put("/resetPassword", resetPassword);
 router.put("/block", blockUser);
 router.put("/unBlock", unblockUser);
 router.get("/blockedUsers", getBlockedUsers);
+router.post("/sendOtp", sendOtp);
+router.post("/verifyOtp", verifyOtp);
 
 export default router;
