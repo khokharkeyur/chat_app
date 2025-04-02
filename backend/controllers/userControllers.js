@@ -7,9 +7,23 @@ const OTP_STORAGE = {};
 
 export const register = async (req, res) => {
   try {
-    const { fullName, username, password, confirmPassword, gender } = req.body;
+    const {
+      fullName,
+      username,
+      password,
+      confirmPassword,
+      gender,
+      phoneNumber,
+    } = req.body;
 
-    if (!fullName || !username || !password || !confirmPassword || !gender) {
+    if (
+      !fullName ||
+      !username ||
+      !password ||
+      !confirmPassword ||
+      !gender ||
+      !phoneNumber
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
     if (password !== confirmPassword) {
@@ -45,6 +59,7 @@ export const register = async (req, res) => {
       password: hashedPassword,
       profilePhoto,
       gender,
+      phoneNumber,
     });
 
     res.status(201).json({
@@ -264,6 +279,7 @@ export const getAdminDetails = async (req, res) => {
       profilePhoto: admin.profilePhoto,
       gender: admin.gender,
       blockedUsers: admin.blockedUsers,
+      phoneNumber: admin.phoneNumber,
     });
   } catch (error) {
     console.error(error);
@@ -363,7 +379,7 @@ export const sendOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     OTP_STORAGE[phoneNumber] = otp;
     setTimeout(() => delete OTP_STORAGE[phoneNumber], 5 * 60 * 1000);
