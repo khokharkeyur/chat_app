@@ -16,9 +16,9 @@ function SignupForm() {
     password: "",
     confirmPassword: "",
     gender: adminDetails?.gender || "",
+    phoneNumber: adminDetails?.phoneNumber || "",
     image: null,
   };
-
   const validationSchema = Yup.object({
     fullName: Yup.string().required("Full Name is required"),
     username: Yup.string().required("Username is required"),
@@ -33,6 +33,9 @@ function SignupForm() {
             .required("Confirm Password is required"),
         }),
     gender: Yup.string().required("Gender is required"),
+    phoneNumber: Yup.string()
+      .required("Phone Number is required")
+      .matches(/^\d{10}$/, "Phone Number must be 10 digits"),
   });
 
   const onSubmit = async (values, { resetForm }) => {
@@ -48,6 +51,7 @@ function SignupForm() {
         formData.append("confirmPassword", values.confirmPassword);
       }
       formData.append("gender", values.gender);
+      formData.append("phoneNumber", values.phoneNumber);
       if (values.image) formData.append("image", values.image);
 
       const apiUrl = adminDetails ? "/user/profile/update" : "/user/register";
@@ -140,6 +144,23 @@ function SignupForm() {
                 component="div"
                 className="text-red-600"
               />
+
+              <div>
+                <label className="label p-2">
+                  <span className="text-base label-text">PhoneNumber</span>
+                </label>
+                <Field
+                  type="text"
+                  name="phoneNumber"
+                  className="w-full input input-bordered h-10"
+                  placeholder="phoneNumber"
+                />
+                <ErrorMessage
+                  name="phoneNumber"
+                  component="div"
+                  className="text-red-600"
+                />
+              </div>
 
               {!adminDetails && (
                 <>

@@ -4,7 +4,7 @@ import messageRoute from "./messageRoutes.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
 
 const authenticatedPaths = [
-  "user/register",
+  "/user/register",
   "/user/login",
   "/user/refreshToken",
   "/user/logout",
