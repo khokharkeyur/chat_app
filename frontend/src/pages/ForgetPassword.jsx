@@ -14,6 +14,7 @@ function ForgotPassword() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [otpToastId, setOtpToastId] = useState(null);
   const [otp, setOtp] = useState("");
   const initialValues = {
     password: "",
@@ -33,6 +34,27 @@ function ForgotPassword() {
       const response = await axiosInterceptors.post("/user/sendOtp", {
         phoneNumber,
       });
+      const toastId = toast.custom(
+        (t) => (
+          <div
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4`}
+          >
+            <div className="w-0 flex-1 flex items-center">
+              <div className="w-full">
+                <p className="text-sm font-medium text-gray-900">Your OTP</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  {response.data.otp}
+                </p>
+              </div>
+            </div>
+          </div>
+        ),
+        { duration: 120000 }
+      );
+
+      setOtpToastId(toastId);
       if (response.data.success) {
         toast.success("OTP sent successfully!");
         setOtpSent(true);
@@ -54,6 +76,9 @@ function ForgotPassword() {
       if (response.data.success) {
         toast.success("OTP verified!");
         setOtpVerified(true);
+        if (otpToastId) {
+          toast.dismiss(otpToastId);
+        }
       } else {
         toast.error("Invalid OTP. Try again.");
       }
