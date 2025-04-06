@@ -83,6 +83,11 @@ const Login = () => {
                 component="div"
                 className="text-red-600"
               />
+              <p className="text-right text-base mt-1">
+                <Link to="/forgetPassword" className="">
+                  Forgot Password?
+                </Link>
+              </p>
             </div>
             <p className="text-center my-2">
               Don't have an account? <Link to="/signup"> signup </Link>
