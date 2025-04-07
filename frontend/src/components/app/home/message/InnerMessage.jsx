@@ -4,6 +4,7 @@ import downArrow from "../../../../assets/down-arrow.svg";
 import MessagePopup from "./MessagePopup";
 import { Popover } from "@mui/material";
 import { setEditMessage } from "../../../../redux/messageSlice";
+import Picker from "emoji-picker-react";
 
 function InnerMessage({ message, onDelete }) {
   const chatRef = useRef();
@@ -11,6 +12,8 @@ function InnerMessage({ message, onDelete }) {
   const { authUser, selectedUser } = useSelector((store) => store.user);
   const { editMessage } = useSelector((store) => store.message);
   const [anchorEl, setAnchorEl] = useState(null);
+  const emojiPickerRef = useRef(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const createdAt = new Date(message.createdAt);
   const formattedTime = createdAt.toTimeString().split(" ")[0];
@@ -18,6 +21,23 @@ function InnerMessage({ message, onDelete }) {
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target) &&
+        showEmojiPicker
+      ) {
+        setShowEmojiPicker(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -39,10 +59,18 @@ function InnerMessage({ message, onDelete }) {
     }
   };
   const handleEmoji = () => {
+    setShowEmojiPicker((prev) => !prev);
     console.log("Add emoji to message");
     handleClose();
   };
 
+  const handleReaction = (emojiData) => {
+    console.log("Reaction selected:", emojiData.emoji);
+
+    // You can emit emoji with socket or update message text here
+    // e.g., append emoji to input box or message text (if editing)
+    setShowEmojiPicker(false);
+  };
   const open = Boolean(anchorEl);
   const id = open ? "message-popup" : undefined;
 
@@ -110,6 +138,26 @@ function InnerMessage({ message, onDelete }) {
             onEmoji={handleEmoji}
           />
         </Popover>
+
+        <span
+          className={`absolute bottom-[-10px] bg-gray-700 rounded-full ${authUser?._id === message?.senderId ? "right-0" : "left-0"} `}
+        >
+          🤣
+        </span>
+
+        {showEmojiPicker && (
+          <div
+            ref={emojiPickerRef}
+            className={`absolute z-50 ${authUser?._id === message?.senderId ? "right-0" : "left-0"} rounded-lg`}
+          >
+            <Picker
+              reactionsDefaultOpen={true}
+              onReactionClick={handleReaction}
+              theme="dark"
+              allowExpandReactions={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
