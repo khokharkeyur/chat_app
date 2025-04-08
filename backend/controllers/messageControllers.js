@@ -88,14 +88,14 @@ export const deleteMessage = async (req, res) => {
 export const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    const { message: newMessageContent } = req.body;
-    if (!newMessageContent || newMessageContent.trim() === "") {
-      return res.status(400).json({ error: "Message content is required" });
-    }
+    const { message: newMessageContent, emoji } = req.body;
+    const updateData = {};
+    if (newMessageContent?.trim()) updateData.message = newMessageContent;
+    if (emoji) updateData.emoji = emoji;
 
     const updatedMessage = await Message.findByIdAndUpdate(
       messageId,
-      { message: newMessageContent },
+      updateData,
       { new: true }
     );
 

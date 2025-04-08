@@ -16,6 +16,7 @@ const messageModel = new mongoose.Schema(
       type: String,
       required: true,
     },
+    emoji: { type: String, default: "" },
   },
   { timestamps: true }
 );
