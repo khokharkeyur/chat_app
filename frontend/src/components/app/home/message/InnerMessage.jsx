@@ -4,13 +4,19 @@ import downArrow from "../../../../assets/down-arrow.svg";
 import MessagePopup from "./MessagePopup";
 import { Popover } from "@mui/material";
 import { setEditMessage } from "../../../../redux/messageSlice";
+import Picker from "emoji-picker-react";
+import axiosInterceptors from "../../axiosInterceptors";
 
 function InnerMessage({ message, onDelete }) {
   const chatRef = useRef();
   const dispatch = useDispatch();
   const { authUser, selectedUser } = useSelector((store) => store.user);
+  const { socket } = useSelector((store) => store.socket);
   const { editMessage } = useSelector((store) => store.message);
   const [anchorEl, setAnchorEl] = useState(null);
+  const emojiPickerRef = useRef(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiTargetId, setEmojiTargetId] = useState(null);
 
   const createdAt = new Date(message.createdAt);
   const formattedTime = createdAt.toTimeString().split(" ")[0];
@@ -18,6 +24,23 @@ function InnerMessage({ message, onDelete }) {
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target) &&
+        showEmojiPicker
+      ) {
+        setShowEmojiPicker(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -38,11 +61,27 @@ function InnerMessage({ message, onDelete }) {
       console.error("Error deleting message:", error);
     }
   };
-  const handleEmoji = () => {
-    console.log("Add emoji to message");
+  const handleEmoji = (messageId) => {
+    setShowEmojiPicker((prev) => !prev);
+    setEmojiTargetId(messageId);
+    console.log("messageId", messageId);
     handleClose();
   };
 
+  const handleReaction = async (emojiData) => {
+    console.log("Reaction selected:", emojiData.emoji);
+    const emoji = emojiData.emoji;
+    if (emoji && emojiTargetId) {
+      socket.emit("editMessage", emojiTargetId, null, emoji);
+
+      await axiosInterceptors.put(`/message/edit/${emojiTargetId}`, {
+        emoji: emoji,
+      });
+    }
+
+    setShowEmojiPicker(false);
+    setEmojiTargetId(null);
+  };
   const open = Boolean(anchorEl);
   const id = open ? "message-popup" : undefined;
 
@@ -107,9 +146,31 @@ function InnerMessage({ message, onDelete }) {
             onEdit={() => handleEdit(message._id)}
             onDelete={() => handleDelete(message._id)}
             authUser={authUser?._id === message?.senderId}
-            onEmoji={handleEmoji}
+            onEmoji={() => handleEmoji(message._id)}
           />
         </Popover>
+
+        {message.emoji && (
+          <span
+            className={`absolute bottom-[-10px] bg-gray-700 rounded-full ${authUser?._id === message?.senderId ? "right-0" : "left-0"} `}
+          >
+            {message.emoji}
+          </span>
+        )}
+
+        {showEmojiPicker && (
+          <div
+            ref={emojiPickerRef}
+            className={`absolute z-50 ${authUser?._id === message?.senderId ? "right-0" : "left-0"} rounded-lg`}
+          >
+            <Picker
+              reactionsDefaultOpen={true}
+              onReactionClick={handleReaction}
+              theme="dark"
+              allowExpandReactions={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

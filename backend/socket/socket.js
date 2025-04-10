@@ -26,11 +26,14 @@ io.on("connection", (socket) => {
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-  socket.on("editMessage", async (messageId, newContent) => {
+  socket.on("editMessage", async (messageId, newContent, emoji) => {
     try {
+      const updateData = {};
+      if (newContent?.trim()) updateData.message = newContent;
+      if (emoji) updateData.emoji = emoji;
       const updatedMessage = await Message.findByIdAndUpdate(
         messageId,
-        { message: newContent },
+        updateData,
         { new: true }
       );
 
