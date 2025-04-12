@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Outlet,
+  useLocation,
+} from "react-router-dom";
 import Signup from "./pages/SignupForm";
 import Dashboard from "./pages/dashBoard";
 import Login from "./pages/Login";
@@ -10,32 +15,8 @@ import { setSocket } from "./redux/socketSlice";
 import { setOnlineUsers } from "./redux/userSlice";
 import PrivateRoutes from "./components/PrivateRoutes";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <PrivateRoutes />,
-    children: [
-      {
-        path: "/",
-        element: <Dashboard />,
-      },
-    ],
-  },
-  {
-    path: "/forgetPassword",
-    element: <ForgetPassword />,
-  },
-  {
-    path: "/signup",
-    element: <Signup />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-]);
-
-function App() {
+function AppContent() {
+  const location = useLocation();
   const { authUser } = useSelector((store) => store.user);
   const { socket } = useSelector((store) => store.socket);
   const dispatch = useDispatch();
@@ -62,10 +43,45 @@ function App() {
   }, [authUser]);
 
   return (
-    <div className="p-4 h-screen flex items-center justify-center">
-      <RouterProvider router={router} />
+    <div
+      className={`p-4 h-screen flex items-center justify-center ${location.pathname === "/signup" ? "" : "h-screen"}`}
+    >
+      <Outlet />
     </div>
   );
 }
 
-export default App;
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppContent />,
+    children: [
+      {
+        path: "/",
+        element: <PrivateRoutes />,
+        children: [
+          {
+            path: "/",
+            element: <Dashboard />,
+          },
+        ],
+      },
+      {
+        path: "/signup",
+        element: <Signup />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/forgetPassword",
+        element: <ForgetPassword />,
+      },
+    ],
+  },
+]);
+
+export default function App() {
+  return <RouterProvider router={router} />;
+}
