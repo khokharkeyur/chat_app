@@ -13,7 +13,7 @@ function ForgotPassword() {
   const token = Cookies.get("AccessToken");
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [otpToastId, setOtpToastId] = useState(null);
   const [otp, setOtp] = useState("");
   const initialValues = {
@@ -32,7 +32,7 @@ function ForgotPassword() {
   const sendOtp = async () => {
     try {
       const response = await axiosInterceptors.post("/user/sendOtp", {
-        phoneNumber,
+        email,
       });
       const toastId = toast.custom(
         (t) => (
@@ -70,7 +70,7 @@ function ForgotPassword() {
   const verifyOtp = async () => {
     try {
       const response = await axiosInterceptors.post("/user/verifyOtp", {
-        phoneNumber,
+        email,
         otp,
       });
       if (response.data.success) {
@@ -98,7 +98,7 @@ function ForgotPassword() {
 
     const payload = authUser?._id
       ? { userId: authUser._id, newPassword: password, confirmPassword }
-      : { phoneNumber, otp, newPassword: password, confirmPassword };
+      : { email, otp, newPassword: password, confirmPassword };
 
     try {
       const response = await axiosInterceptors.put(
@@ -128,14 +128,14 @@ function ForgotPassword() {
             {!otpSent ? (
               <>
                 <label className="label p-2">
-                  <span className="text-base label-text">Phone Number</span>
+                  <span className="text-base label-text">Email</span>
                 </label>
                 <input
                   type="text"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full input input-bordered h-10"
-                  placeholder="Enter phone number"
+                  placeholder="Enter Email"
                 />
                 <button
                   onClick={sendOtp}

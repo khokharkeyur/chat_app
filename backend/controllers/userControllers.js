@@ -15,14 +15,8 @@ const client = new SMTPClient({
 
 export const register = async (req, res) => {
   try {
-    const {
-      fullName,
-      username,
-      password,
-      confirmPassword,
-      gender,
-      phoneNumber,
-    } = req.body;
+    const { fullName, username, password, confirmPassword, gender, email } =
+      req.body;
 
     if (
       !fullName ||
@@ -30,7 +24,7 @@ export const register = async (req, res) => {
       !password ||
       !confirmPassword ||
       !gender ||
-      !phoneNumber
+      !email
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -67,7 +61,7 @@ export const register = async (req, res) => {
       password: hashedPassword,
       profilePhoto,
       gender,
-      phoneNumber,
+      email,
     });
 
     res.status(201).json({
@@ -287,7 +281,7 @@ export const getAdminDetails = async (req, res) => {
       profilePhoto: admin.profilePhoto,
       gender: admin.gender,
       blockedUsers: admin.blockedUsers,
-      phoneNumber: admin.phoneNumber,
+      email: admin.email,
     });
   } catch (error) {
     console.error(error);
