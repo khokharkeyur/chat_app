@@ -16,7 +16,8 @@ function SignupForm() {
     password: "",
     confirmPassword: "",
     gender: adminDetails?.gender || "",
-    phoneNumber: adminDetails?.phoneNumber || "",
+    email: adminDetails?.email || "",
+
     image: null,
   };
   const validationSchema = Yup.object({
@@ -33,9 +34,9 @@ function SignupForm() {
             .required("Confirm Password is required"),
         }),
     gender: Yup.string().required("Gender is required"),
-    phoneNumber: Yup.string()
-      .required("Phone Number is required")
-      .matches(/^\d{10}$/, "Phone Number must be 10 digits"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
   });
 
   const onSubmit = async (values, { resetForm }) => {
@@ -51,7 +52,7 @@ function SignupForm() {
         formData.append("confirmPassword", values.confirmPassword);
       }
       formData.append("gender", values.gender);
-      formData.append("phoneNumber", values.phoneNumber);
+      formData.append("email", values.email);
       if (values.image) formData.append("image", values.image);
 
       const apiUrl = adminDetails ? "/user/profile/update" : "/user/register";
@@ -147,16 +148,16 @@ function SignupForm() {
 
               <div>
                 <label className="label p-2">
-                  <span className="text-base label-text">PhoneNumber</span>
+                  <span className="text-base label-text">Email</span>
                 </label>
                 <Field
                   type="text"
-                  name="phoneNumber"
+                  name="email"
                   className="w-full input input-bordered h-10"
-                  placeholder="phoneNumber"
+                  placeholder="email"
                 />
                 <ErrorMessage
-                  name="phoneNumber"
+                  name="email"
                   component="div"
                   className="text-red-600"
                 />

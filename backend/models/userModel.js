@@ -28,9 +28,12 @@ const userModel = new mongoose.Schema(
       ref: "User",
       default: [],
     },
-    phoneNumber:{
+    phoneNumber: {
       type: Number,
-    }
+    },
+    email: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

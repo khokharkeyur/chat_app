@@ -2,19 +2,21 @@ import { User } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import firebase from "../config/firebase.config.js";
+import { SMTPClient } from "emailjs";
 
 const OTP_STORAGE = {};
 
+const client = new SMTPClient({
+  user: process.env.USER_EMAIL,
+  password: process.env.USER_PASSWORD,
+  host: "smtp.gmail.com",
+  ssl: true,
+});
+
 export const register = async (req, res) => {
   try {
-    const {
-      fullName,
-      username,
-      password,
-      confirmPassword,
-      gender,
-      phoneNumber,
-    } = req.body;
+    const { fullName, username, password, confirmPassword, gender, email } =
+      req.body;
 
     if (
       !fullName ||
@@ -22,7 +24,7 @@ export const register = async (req, res) => {
       !password ||
       !confirmPassword ||
       !gender ||
-      !phoneNumber
+      !email
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -59,7 +61,7 @@ export const register = async (req, res) => {
       password: hashedPassword,
       profilePhoto,
       gender,
-      phoneNumber,
+      email,
     });
 
     res.status(201).json({
@@ -279,7 +281,7 @@ export const getAdminDetails = async (req, res) => {
       profilePhoto: admin.profilePhoto,
       gender: admin.gender,
       blockedUsers: admin.blockedUsers,
-      phoneNumber: admin.phoneNumber,
+      email: admin.email,
     });
   } catch (error) {
     console.error(error);
@@ -369,25 +371,37 @@ export const unblockUser = async (req, res) => {
 
 export const sendOtp = async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
-    if (!phoneNumber) {
-      return res.status(400).json({ message: "Phone number is required" });
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
     }
 
-    const user = await User.findOne({ phoneNumber });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    OTP_STORAGE[email] = otp;
+    setTimeout(() => delete OTP_STORAGE[email], 5 * 60 * 1000);
 
-    OTP_STORAGE[phoneNumber] = otp;
-    setTimeout(() => delete OTP_STORAGE[phoneNumber], 5 * 60 * 1000);
+    const message = {
+      text: `Hello ${user.fullName}, your OTP is: ${otp}`,
+      from: `chatApp <${process.env.USER_EMAIL}>`,
+      to: `${user.fullName} <${email}>`,
+      subject: "Your OTP Code",
+    };
 
-    res.status(200).json({
-      success: true,
-      message: "OTP generated successfully",
-      otp,
+    client.send(message, (err, message) => {
+      if (err) {
+        console.error("Email send error:", err);
+        return res.status(500).json({ message: "Failed to send email" });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent to your email successfully",
+      });
     });
   } catch (error) {
     console.error("Error sending OTP:", error);
@@ -397,17 +411,19 @@ export const sendOtp = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { phoneNumber, otp } = req.body;
+    const { email, otp } = req.body;
 
-    if (!phoneNumber || !otp) {
+    if (!email || !otp) {
       return res
         .status(400)
         .json({ message: "Phone number and OTP are required" });
     }
 
-    if (!OTP_STORAGE[phoneNumber] || OTP_STORAGE[phoneNumber] !== otp) {
+    if (!OTP_STORAGE[email] || OTP_STORAGE[email] !== otp) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
+
+    delete OTP_STORAGE[email];
 
     res.status(200).json({
       success: true,
