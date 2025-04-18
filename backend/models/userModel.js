@@ -28,9 +28,6 @@ const userModel = new mongoose.Schema(
       ref: "User",
       default: [],
     },
-    phoneNumber: {
-      type: Number,
-    },
     email: {
       type: String,
     },
