@@ -127,8 +127,9 @@ export const updateProfile = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { userId, phoneNumber, otp, newPassword, confirmPassword } = req.body;
-    if ((!userId && !phoneNumber) || !newPassword || !confirmPassword) {
+    const { userId, email, otp, newPassword, confirmPassword } = req.body;
+    console.log("req.body", req.body);
+    if ((!userId && !email) || !newPassword || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -140,13 +141,13 @@ export const resetPassword = async (req, res) => {
 
     if (userId) {
       user = await User.findById(userId);
-    } else if (phoneNumber) {
-      if (!otp || OTP_STORAGE[phoneNumber] !== otp) {
+    } else if (email) {
+      if (!otp || OTP_STORAGE[email] !== otp) {
         return res.status(400).json({ message: "Invalid or expired OTP" });
       }
-      delete OTP_STORAGE[phoneNumber];
+      delete OTP_STORAGE[email];
 
-      user = await User.findOne({ phoneNumber });
+      user = await User.findOne({ email });
     }
 
     if (!user) {
@@ -156,6 +157,7 @@ export const resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     user.password = hashedPassword;
+
     await user.save();
 
     res.status(200).json({
@@ -422,8 +424,6 @@ export const verifyOtp = async (req, res) => {
     if (!OTP_STORAGE[email] || OTP_STORAGE[email] !== otp) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
-
-    delete OTP_STORAGE[email];
 
     res.status(200).json({
       success: true,
