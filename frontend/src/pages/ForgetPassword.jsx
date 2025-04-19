@@ -7,174 +7,199 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import Cookies from "js-cookie";
 
+const LoaderButton = ({
+  isLoading,
+  text,
+  onClick,
+  type = "button",
+  className = "",
+  ...props
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={isLoading}
+    className={`relative flex items-center justify-center gap-2 btn btn-block btn-sm mt-4 border border-slate-700 
+      ${isLoading ? "opacity-60 cursor-not-allowed grayscale" : ""}
+      ${className}`}
+    {...props}
+  >
+    {isLoading ? `${text}...` : text}
+  </button>
+);
+
 function ForgotPassword() {
   const { authUser } = useSelector((store) => store.user);
   const navigate = useNavigate();
   const token = Cookies.get("AccessToken");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [email, setEmail] = useState("");
-  const [otpToastId, setOtpToastId] = useState(null);
-  const [otp, setOtp] = useState("");
-  const initialValues = {
-    password: "",
-    confirmPassword: "",
+
+  const [formState, setFormState] = useState({
+    otpSent: false,
+    otpVerified: false,
+    email: "",
+    otp: "",
+  });
+
+  const [loading, setLoading] = useState({
+    sendOtp: false,
+    verifyOtp: false,
+    resetPassword: false,
+  });
+
+  const setLoadingState = (key, value) =>
+    setLoading((prev) => ({ ...prev, [key]: value }));
+
+  const setForm = (key, value) =>
+    setFormState((prev) => ({ ...prev, [key]: value }));
+
+  const sendOtp = async () => {
+    if (!formState.email) return toast.error("Please enter your email.");
+    setLoadingState("sendOtp", true);
+    try {
+      const { data } = await axiosInterceptors.post("/user/sendOtp", {
+        email: formState.email,
+      });
+
+      if (data.success) {
+        toast.success("OTP sent successfully!");
+        setForm("otpSent", true);
+      } else {
+        toast.error(data.message || "Failed to send OTP.");
+      }
+    } catch (error) {
+      toast.error("Error sending OTP.");
+      console.error("Send OTP error:", error);
+    } finally {
+      setLoadingState("sendOtp", false);
+    }
   };
+
+  const verifyOtp = async () => {
+    if (!formState.otp) return toast.error("Please enter the OTP.");
+    setLoadingState("verifyOtp", true);
+    try {
+      const { data } = await axiosInterceptors.post("/user/verifyOtp", {
+        email: formState.email,
+        otp: formState.otp,
+      });
+
+      if (data.success) {
+        toast.success("OTP verified!");
+        setForm("otpVerified", true);
+      } else {
+        toast.error("Invalid OTP. Try again.");
+      }
+    } catch (error) {
+      toast.error("Error verifying OTP.");
+      console.error("Verify OTP error:", error);
+    } finally {
+      setLoadingState("verifyOtp", false);
+    }
+  };
+
+  const handleResetPassword = async (values, { resetForm }) => {
+    if (!token && !formState.otpVerified) {
+      return toast.error("Please verify OTP first.");
+    }
+
+    setLoadingState("resetPassword", true);
+
+    const payload = authUser?._id
+      ? {
+          userId: authUser._id,
+          newPassword: values.password,
+          confirmPassword: values.confirmPassword,
+        }
+      : {
+          email: formState.email,
+          otp: formState.otp,
+          newPassword: values.password,
+          confirmPassword: values.confirmPassword,
+        };
+
+    try {
+      const { data } = await axiosInterceptors.put(
+        "/user/resetPassword",
+        payload
+      );
+      if (data.success) {
+        toast.success(data.message);
+        resetForm();
+        navigate("/");
+      } else {
+        toast.error(data.message || "Password reset failed.");
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Password reset failed.");
+      console.error("Reset Password error:", error);
+    } finally {
+      setLoadingState("resetPassword", false);
+    }
+  };
+
   const validationSchema = Yup.object({
     password: Yup.string()
-      .min(6, "Password must be at least 6 characters long")
+      .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Please confirm your password"),
   });
 
-  const sendOtp = async () => {
-    try {
-      const response = await axiosInterceptors.post("/user/sendOtp", {
-        email,
-      });
-      const toastId = toast.custom(
-        (t) => (
-          <div
-            className={`${
-              t.visible ? "animate-enter" : "animate-leave"
-            } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4`}
-          >
-            <div className="w-0 flex-1 flex items-center">
-              <div className="w-full">
-                <p className="text-sm font-medium text-gray-900">Your OTP</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  {response.data.otp}
-                </p>
-              </div>
-            </div>
-          </div>
-        ),
-        { duration: 120000 }
-      );
-
-      setOtpToastId(toastId);
-      if (response.data.success) {
-        toast.success("OTP sent successfully!");
-        setOtpSent(true);
-      } else {
-        toast.error(response.data.message);
-      }
-    } catch (error) {
-      toast.error("Error sending OTP. Try again.");
-      console.error("Error:", error);
-    }
-  };
-
-  const verifyOtp = async () => {
-    try {
-      const response = await axiosInterceptors.post("/user/verifyOtp", {
-        email,
-        otp,
-      });
-      if (response.data.success) {
-        toast.success("OTP verified!");
-        setOtpVerified(true);
-        if (otpToastId) {
-          toast.dismiss(otpToastId);
-        }
-      } else {
-        toast.error("Invalid OTP. Try again.");
-      }
-    } catch (error) {
-      toast.error("Error verifying OTP.");
-      console.error("Error:", error);
-    }
-  };
-
-  const onSubmit = async (values, { resetForm }) => {
-    if (!token && !otpVerified) {
-      toast.error("Please verify OTP first.");
-      return;
-    }
-
-    const { password, confirmPassword } = values;
-
-    const payload = authUser?._id
-      ? { userId: authUser._id, newPassword: password, confirmPassword }
-      : { email, otp, newPassword: password, confirmPassword };
-
-    try {
-      const response = await axiosInterceptors.put(
-        "/user/resetPassword",
-        payload
-      );
-
-      if (response.data.success) {
-        resetForm();
-        toast.success(response.data.message);
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Error occurred during password reset:", error);
-      resetForm();
-    }
-  };
-
   return (
     <div className="min-w-96 mx-auto">
       <div className="w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border border-gray-100">
-        <h1 className="text-3xl font-bold text-center">Forgot Password</h1>
+        <h1 className="text-3xl font-bold text-center mb-4">Forgot Password</h1>
 
-        {!token ? (
-          // If no token, show phone number and OTP fields
-          <div>
-            {!otpSent ? (
+        {!token && !formState.otpVerified && (
+          <>
+            <label className="label p-2">
+              <span className="text-base label-text">Email</span>
+            </label>
+            <input
+              type="email"
+              value={formState.email}
+              onChange={(e) => setForm("email", e.target.value)}
+              className="w-full input input-bordered h-10"
+              placeholder="Enter Email"
+              disabled={formState.otpSent}
+            />
+            {formState.otpSent ? (
               <>
-                <label className="label p-2">
-                  <span className="text-base label-text">Email</span>
-                </label>
-                <input
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full input input-bordered h-10"
-                  placeholder="Enter Email"
-                />
-                <button
-                  onClick={sendOtp}
-                  className="btn btn-block btn-sm mt-4 border border-slate-700"
-                >
-                  Send OTP
-                </button>
-              </>
-            ) : (
-              <>
-                <label className="label p-2">
+                <label className="label p-2 mt-2">
                   <span className="text-base label-text">Verify OTP</span>
                 </label>
                 <input
                   type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  value={formState.otp}
+                  onChange={(e) => setForm("otp", e.target.value)}
                   className="w-full input input-bordered h-10"
                   placeholder="Enter OTP"
                 />
-                <button
+                <LoaderButton
+                  isLoading={loading.verifyOtp}
+                  text="Verify OTP"
                   onClick={verifyOtp}
-                  className="btn btn-block btn-sm mt-4 border border-slate-700"
-                >
-                  Verify OTP
-                </button>
+                />
               </>
+            ) : (
+              <LoaderButton
+                isLoading={loading.sendOtp}
+                text="Send OTP"
+                onClick={sendOtp}
+              />
             )}
-          </div>
-        ) : null}
+          </>
+        )}
 
-        {(token || otpVerified) && (
+        {(token || formState.otpVerified) && (
           <Formik
-            initialValues={initialValues}
+            initialValues={{ password: "", confirmPassword: "" }}
             validationSchema={validationSchema}
-            onSubmit={onSubmit}
+            onSubmit={handleResetPassword}
           >
             <Form>
-              <div>
+              <div className="mt-4">
                 <label className="label p-2">
                   <span className="text-base label-text">New Password</span>
                 </label>
@@ -190,6 +215,7 @@ function ForgotPassword() {
                   className="text-red-600"
                 />
               </div>
+
               <div>
                 <label className="label p-2">
                   <span className="text-base label-text">Confirm Password</span>
@@ -206,12 +232,12 @@ function ForgotPassword() {
                   className="text-red-600"
                 />
               </div>
-              <button
+
+              <LoaderButton
+                isLoading={loading.resetPassword}
+                text="Reset Password"
                 type="submit"
-                className="btn btn-block btn-sm mt-4 border border-slate-700"
-              >
-                Reset Password
-              </button>
+              />
             </Form>
           </Formik>
         )}
