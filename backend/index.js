@@ -23,7 +23,7 @@ db.on("error", (error) => {
 
 db.once("open", () => {
   console.log("Connected to MongoDB");
-    setupRoutes(app)
+  setupRoutes(app);
 });
 
 const corsOptions = {
