@@ -1,5 +1,6 @@
 import { Conversation } from "../models/conversationModel.js";
 import { Message } from "../models/messageModel.js";
+import { Group } from "../models/groupModel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 
 export const sendMessage = async (req, res) => {
@@ -12,36 +13,75 @@ export const sendMessage = async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    let gotConversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiverId] },
-    });
+    const group = await Group.findById(receiverId);
+    let newMessage;
 
-    if (!gotConversation) {
-      gotConversation = await Conversation.create({
-        participants: [senderId, receiverId],
+    if (group) {
+      // GROUP MESSAGE
+      const membersToSend = group.members.filter(
+        (member) => member.toString() !== senderId
+      );
+
+      newMessage = await Message.create({
+        senderId,
+        receiverId, // group ID as receiver
+        message,
       });
-    }
-    const newMessage = await Message.create({
-      senderId,
-      receiverId,
-      message,
-    });
-    if (newMessage) {
+
+      // Save message in conversation with group
+      let gotConversation = await Conversation.findOne({
+        participants: { $all: group.members, $size: group.members.length },
+      });
+
+      if (!gotConversation) {
+        gotConversation = await Conversation.create({
+          participants: group.members,
+          isGroup: true,
+          groupId: group._id,
+        });
+      }
+
       gotConversation.messages.push(newMessage._id);
+      await Promise.all([gotConversation.save(), newMessage.save()]);
+
+      // Emit message to each group member
+      membersToSend.forEach((memberId) => {
+        const receiverSocketId = getReceiverSocketId(memberId.toString());
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
+      });
+    } else {
+      // 1-ON-1 MESSAGE
+      let gotConversation = await Conversation.findOne({
+        participants: { $all: [senderId, receiverId] },
+      });
+
+      if (!gotConversation) {
+        gotConversation = await Conversation.create({
+          participants: [senderId, receiverId],
+        });
+      }
+
+      newMessage = await Message.create({
+        senderId,
+        receiverId,
+        message,
+      });
+
+      gotConversation.messages.push(newMessage._id);
+      await Promise.all([gotConversation.save(), newMessage.save()]);
+
+      const receiverSocketId = getReceiverSocketId(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newMessage", newMessage);
+      }
     }
 
-    await Promise.all([gotConversation.save(), newMessage.save()]);
-
-    // SOCKET IO
-    const receiverSocketId = getReceiverSocketId(receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
-    }
-    return res.status(201).json({
-      newMessage,
-    });
+    return res.status(201).json({ newMessage });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ error: "Server error" });
   }
 };
 export const getMessage = async (req, res) => {
@@ -57,6 +97,35 @@ export const getMessage = async (req, res) => {
   }
 };
 
+export const getGroupMessage = async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    let conversation = await Conversation.findOne({
+      groupId: groupId,
+      isGroup: true,
+    }).populate("messages");
+
+    if (!conversation) {
+      conversation = await Conversation.create({
+        participants: group.members,
+        groupId: group._id,
+        isGroup: true,
+        messages: [],
+      });
+    }
+
+    res.status(200).json(conversation.messages || []);
+  } catch (error) {
+    console.error("Error in getGroupMessage:", error);
+    res.status(500).json({ error: "Failed to get group messages" });
+  }
+};
 export const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;

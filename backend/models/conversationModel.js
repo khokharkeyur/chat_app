@@ -14,6 +14,8 @@ const conversationModel = new mongoose.Schema(
         ref: "Message",
       },
     ],
+    isGroup: { type: Boolean, default: false },
+    groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
   },
   { timestamps: true }
 );
