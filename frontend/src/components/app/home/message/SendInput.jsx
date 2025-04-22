@@ -7,7 +7,7 @@ import { setEditMessage, setMessages } from "../../../../redux/messageSlice";
 function SendInput() {
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
-  const { selectedUser } = useSelector((store) => store.user);
+  const { authUser, selectedUser } = useSelector((store) => store.user);
   const { messages, editMessage } = useSelector((store) => store.message);
   const { socket } = useSelector((store) => store.socket);
 
@@ -23,10 +23,13 @@ function SendInput() {
     }
   }, [message]);
 
+  const isGroup = selectedUser?.members;
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
     try {
+      let res;
       if (editMessage) {
         socket.emit("editMessage", editMessage._id, message);
 
@@ -35,7 +38,7 @@ function SendInput() {
         });
         dispatch(setEditMessage(null));
       } else {
-        const res = await axiosInterceptors.post(
+        res = await axiosInterceptors.post(
           `/message/send/${selectedUser?._id}`,
           { message },
           {
@@ -45,7 +48,17 @@ function SendInput() {
             withCredentials: true,
           }
         );
+
         dispatch(setMessages([...messages, res?.data?.newMessage]));
+      }
+
+      if (isGroup && res?.data?.newMessage) {
+        selectedUser.members.forEach((member) => {
+          if (member._id !== authUser._id) {
+            const data = { ...res.data.newMessage };
+            socket.emit("newMessage", member._id, data);
+          }
+        });
       }
     } catch (error) {
       console.log(error);

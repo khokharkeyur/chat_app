@@ -24,7 +24,7 @@ function InnerMessage({ message, onDelete }) {
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
-
+console.log('selectedUser', selectedUser)
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -99,7 +99,11 @@ function InnerMessage({ message, onDelete }) {
             src={
               message?.senderId === authUser?._id
                 ? authUser?.profilePhoto
-                : selectedUser?.profilePhoto
+                : selectedUser?.members
+                  ? selectedUser.members.find(
+                      (member) => member._id === message?.senderId
+                    )?.profilePhoto
+                  : selectedUser?.profilePhoto
             }
           />
         </div>
