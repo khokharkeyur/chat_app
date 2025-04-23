@@ -87,8 +87,10 @@ export const removeMemberFromGroup = async (req, res) => {
 
 export const getAllGroups = async (req, res) => {
   try {
-    const groups = await Group.find().populate("members");
-
+    const groups = await Group.find().populate({
+      path: "members",
+      select: "-password -blockedUsers -__v",
+    });
     return res.status(200).json({
       message: "Groups retrieved successfully",
       groups,
