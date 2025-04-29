@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BiSearchAlt2 } from "react-icons/bi";
 import OtherUsers from "./OtherUsers";
 import axiosInterceptors from "../../axiosInterceptors";
@@ -12,20 +12,48 @@ import {
   setSelectedUser,
 } from "../../../../redux/userSlice";
 import Cookies from "js-cookie";
+import useGetOtherUsers from "../../../../hooks/useGetOtherUsers";
+import useGetGroups from "../../../../hooks/usegetGroups";
 
 function Sidebar() {
   const [search, setSearch] = useState("");
-  const { otherUsers, Groups } = useSelector((store) => store.user);
+  const [allUsers, setAllUsers] = useState([]);
+  const [allGroups, setAllGroups] = useState([]);
   const dispatch = useDispatch();
-  const naviget = useNavigate();
+  const navigate = useNavigate();
+
+  const { data: fetchedUsers } = useGetOtherUsers();
+  const { data: fetchedGroups } = useGetGroups();
+
+  useEffect(() => {
+    if (fetchedUsers) {
+      setAllUsers(fetchedUsers);
+      dispatch(setOtherUsers(fetchedUsers));
+    }
+  }, [fetchedUsers]);
+
+  useEffect(() => {
+    if (fetchedGroups) {
+      setAllGroups(fetchedGroups);
+      dispatch(setGroups(fetchedGroups));
+    }
+  }, [fetchedGroups]);
+
+  useEffect(() => {
+    if (search.trim() === "") {
+      dispatch(setOtherUsers(allUsers));
+      dispatch(setGroups(allGroups));
+    }
+  }, [search]);
 
   const searchSubmitHandler = (e) => {
     e.preventDefault();
     const searchTerm = search.toLowerCase();
-    const filteredUsers = otherUsers?.filter((user) =>
+
+    const filteredUsers = allUsers?.filter((user) =>
       user.fullName.toLowerCase().includes(searchTerm)
     );
-    const filteredGroups = Groups?.filter((group) =>
+    const filteredGroups = allGroups?.filter((group) =>
       group.name.toLowerCase().includes(searchTerm)
     );
 
@@ -33,8 +61,9 @@ function Sidebar() {
       dispatch(setOtherUsers(filteredUsers));
       dispatch(setGroups(filteredGroups));
     } else {
-      dispatch(setOtherUsers(otherUsers));
       toast.error("User or group not found!");
+      dispatch(setOtherUsers(allUsers));
+      dispatch(setGroups(allGroups));
     }
   };
 
@@ -44,7 +73,7 @@ function Sidebar() {
       toast.success(res.data.message);
       Cookies.remove("AccessToken", { path: "/" });
       Cookies.remove("RefreshToken", { path: "/" });
-      naviget("/login");
+      navigate("/login");
       dispatch(setSelectedUser(null));
       dispatch(setAuthUser(null));
     } catch (error) {
@@ -53,7 +82,7 @@ function Sidebar() {
   };
 
   return (
-    <div className=" border-r border-slate-500 p-4 flex flex-col">
+    <div className="border-r border-slate-500 p-4 flex flex-col">
       <form
         onSubmit={searchSubmitHandler}
         action=""
