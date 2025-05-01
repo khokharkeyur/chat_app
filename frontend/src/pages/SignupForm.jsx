@@ -60,12 +60,7 @@ function SignupForm() {
         ? axiosInterceptors.put
         : axiosInterceptors.post;
 
-      const res = await method(apiUrl, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-      });
+      const res = await method(apiUrl, formData);
 
       if (res.data.success) {
         toast.success(res.data.message);
