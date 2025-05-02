@@ -40,13 +40,7 @@ function SendInput() {
       } else {
         res = await axiosInterceptors.post(
           `/message/send/${selectedUser?._id}`,
-          { message },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            withCredentials: true,
-          }
+          { message }
         );
 
         dispatch(setMessages([...messages, res?.data?.newMessage]));

@@ -21,11 +21,7 @@ const CommanGroupModal = ({
   const deleteGroup = async (groupId) => {
     if (!groupId) return;
     try {
-      const response = await axiosInterceptors.delete(`/group/${groupId}`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axiosInterceptors.delete(`/group/${groupId}`);
       dispatch(
         setGroups((prevGroups) =>
           prevGroups.filter((group) => group.id !== groupId)
@@ -44,12 +40,7 @@ const CommanGroupModal = ({
     if (!groupId || !memberId) return;
     try {
       const response = await axiosInterceptors.delete(
-        `/group/${groupId}/member/${memberId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        `/group/${groupId}/member/${memberId}`
       );
 
       toast.success(response.data.message);
@@ -124,9 +115,7 @@ const CommanGroupModal = ({
                   <button
                     className={`btn ${
                       selectedUser?.admin === authUser?._id ? "" : "hidden"
-                    } ${
-                      selectedUser?.admin === member?._id ? "hidden" : ""
-                    }`}
+                    } ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
                     onClick={() =>
                       removeMemberFromGroup(selectedUser?._id, member._id)
                     }
@@ -136,9 +125,7 @@ const CommanGroupModal = ({
                   <button
                     className={`btn ${
                       selectedUser?.admin === authUser?._id ? "hidden" : ""
-                    } ${
-                      selectedUser?.admin === member?._id ? "" : "hidden"
-                    }`}
+                    } ${selectedUser?.admin === member?._id ? "" : "hidden"}`}
                   >
                     Admin
                   </button>
@@ -194,20 +181,30 @@ const CommanGroupModal = ({
                   }`}
                   onClick={() => userclick(user)}
                 >
-                  <img src={user.profilePhoto} alt="" className="w-12 rounded-full" />
+                  <img
+                    src={user.profilePhoto}
+                    alt=""
+                    className="w-12 rounded-full"
+                  />
                   <p className="">{user.fullName}</p>
                 </div>
               ))}
             </p>
             <div>
-              {groupMember.length > 0 && <p className="mb-3">Selected Members</p>}
+              {groupMember.length > 0 && (
+                <p className="mb-3">Selected Members</p>
+              )}
               {groupMember?.map((user) => (
                 <div
                   key={user._id}
                   className="flex items-center gap-2 mb-3 cursor-pointer"
                   onClick={() => removeMember(user)}
                 >
-                  <img src={user.profilePhoto} alt="" className="w-12 rounded-full" />
+                  <img
+                    src={user.profilePhoto}
+                    alt=""
+                    className="w-12 rounded-full"
+                  />
                   <p className="">{user.fullName}</p>
                 </div>
               ))}
