@@ -157,62 +157,79 @@ const CommanGroupModal = ({
           </>
         ) : (
           <>
-            <h3 className="font-bold text-lg">Create New Group</h3>
-            <div className="flex flex-col ">
-              <label htmlFor="" className="my-2">
-                Enter Group Name
-              </label>
-              <input
-                type="text"
-                className="w-[60%] bg-slate-800"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-              />
-            </div>
-            <p className="pt-2 pb-4">
-              Add Members in this Group
-              {otherUsers?.map((user) => (
-                <div
-                  key={user._id}
-                  className={`flex items-center gap-2 mb-3 cursor-pointer ${
-                    groupMember.find((member) => member._id === user._id)
-                      ? "hidden"
-                      : ""
-                  }`}
-                  onClick={() => userclick(user)}
+            <div className=" rounded-lg w-full max-w-xl text-white">
+              <h3 className="text-2xl font-semibold mb-4">Create New Group</h3>
+
+              <div className="mb-6">
+                <label
+                  className="block text-sm font-med
+                  ium mb-2"
                 >
-                  <img
-                    src={user.profilePhoto}
-                    alt=""
-                    className="w-12 rounded-full"
-                  />
-                  <p className="">{user.fullName}</p>
+                  Group Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  placeholder="Enter group name"
+                />
+              </div>
+
+              {/* Available Members */}
+              <div className="mb-6">
+                <p className="text-sm font-medium mb-3">Add Members</p>
+                <div
+                  classN
+                  ame="grid grid-cols-1 sm:grid-cols-
+                    2 gap-3 max-h-52 overflow-y-auto"
+                >
+                  {otherUsers?.map((user) =>
+                    groupMember.find(
+                      (member) => member._id === user._id
+                    ) ? null : (
+                      <div
+                        key={user._id}
+                        className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-800 cursor-pointer transition"
+                        onClick={() => userclick(user)}
+                      >
+                        <img
+                          src={user.profilePhoto}
+                          alt={user.fullName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <span>{user.fullName}</span>
+                      </div>
+                    )
+                  )}
                 </div>
-              ))}
-            </p>
-            <div>
+              </div>
+
               {groupMember.length > 0 && (
-                <p className="mb-3">Selected Members</p>
-              )}
-              {groupMember?.map((user) => (
-                <div
-                  key={user._id}
-                  className="flex items-center gap-2 mb-3 cursor-pointer"
-                  onClick={() => removeMember(user)}
-                >
-                  <img
-                    src={user.profilePhoto}
-                    alt=""
-                    className="w-12 rounded-full"
-                  />
-                  <p className="">{user.fullName}</p>
+                <div className="mb-6">
+                  <p className="text-sm font-medium mb-3">Selected Members</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {groupMember.map((user) => (
+                      <div
+                        key={user._id}
+                        className="flex items-center gap-3 p-2 rounded-md bg-blue-800/40 hover:bg-blue-700/50 cursor-pointer transition"
+                        onClick={() => removeMember(user)}
+                      >
+                        <img
+                          src={user.profilePhoto}
+                          alt={user.fullName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <span>{user.fullName}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="modal-action">
-              <form method="dialog">
+              )}
+
+              <div className="flex justify-end gap-3">
                 <button
-                  className="btn mx-3"
+                  className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-md text-white font-medium transition"
                   onClick={() => {
                     createGroup();
                     setGroupMember([]);
@@ -220,15 +237,7 @@ const CommanGroupModal = ({
                 >
                   Create Group
                 </button>
-                <button
-                  className="btn"
-                  onClick={() => {
-                    setGroupMember([]);
-                  }}
-                >
-                  Close
-                </button>
-              </form>
+              </div>
             </div>
           </>
         )}
