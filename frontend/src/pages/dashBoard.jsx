@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import HomePage from "../components/app/home";
 import Tooltip from "@mui/material/Tooltip";
 import { Avatar, Divider, IconButton, Menu, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axiosInterceptors from "../components/app/axiosInterceptors";
+import DialogWrapper from "../comman/DialogWrapper";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -14,8 +15,6 @@ function Dashboard() {
   const { authUser } = useSelector((store) => store.user);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const dialogRef = useRef(null);
-  const blockedUserDialogRef = useRef(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -26,29 +25,25 @@ function Dashboard() {
   };
 
   const openDialog = () => {
-    if (dialogRef.current) {
-      dialogRef.current.showModal();
-    }
+    const modal = document.getElementById("adminDetailsDialog");
+    if (modal) modal.showModal();
     handleClose();
   };
 
   const closeDialog = () => {
-    if (dialogRef.current) {
-      dialogRef.current.close();
-    }
+    const modal = document.getElementById("adminDetailsDialog");
+    if (modal) modal.close();
   };
 
   const openBlockedUserDialog = () => {
-    if (blockedUserDialogRef.current) {
-      blockedUserDialogRef.current.showModal();
-    }
+    const modal = document.getElementById("blockedUsersDialog");
+    if (modal) modal.showModal();
     handleClose();
   };
 
   const closeBlockedUserDialog = () => {
-    if (blockedUserDialogRef.current) {
-      blockedUserDialogRef.current.close();
-    }
+    const modal = document.getElementById("blockedUsersDialog");
+    if (modal) modal.close();
   };
   useEffect(() => {
     const fetchAdminDetails = async () => {
@@ -84,17 +79,19 @@ function Dashboard() {
 
   const handleUnBlock = async (userId) => {
     try {
-  
       const response = await axiosInterceptors.put("/user/unBlock", { userId });
-  
+
       if (response.status === 200) {
         console.log(response.data.message);
         setBlockedUsers((prev) => prev.filter((user) => user._id !== userId));
       }
     } catch (error) {
-      console.error("Error unblocking user:", error.response?.data?.message || error.message);
+      console.error(
+        "Error unblocking user:",
+        error.response?.data?.message || error.message
+      );
     }
-  }
+  };
 
   return (
     <div>
@@ -168,8 +165,8 @@ function Dashboard() {
         </Menu>
       </div>
 
-      <dialog ref={dialogRef} className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box">
+      <DialogWrapper id="adminDetailsDialog" onClose={closeDialog}>
+        <div>
           {adminDetails && (
             <div className="flex flex-col justify-center items-center">
               <img
@@ -194,49 +191,38 @@ function Dashboard() {
             </button>
           </div>
         </div>
-      </dialog>
+      </DialogWrapper>
 
-      <dialog
-        ref={blockedUserDialogRef}
-        className="modal modal-bottom sm:modal-middle"
-      >
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">Blocked Users</h3>
-          {blockedUsers.length > 0 ? (
-            blockedUsers.map((user) => (
-              <div
-                key={user._id}
-                className=" rounded-full flex justify-between mx-3 my-3"
-              >
-                <div className="flex">
-                  <img
-                    src={user.profilePhoto}
-                    alt={user.fullName}
-                    className="mr-4 w-12"
-                  />
-                  <p className="pt-2 pb-4">{user.fullName}</p>
-                </div>
-                <button
-                  className="btn"
-                  onClick={() => handleUnBlock(user._id)}
-                >
-                  Unblock
-                </button>
-              </div>
-            ))
-          ) : (
-            <p>No blocked users found.</p>
-          )}
-          <div className="modal-action w-full">
-            <button
-              className="btn flex w-full"
-              onClick={closeBlockedUserDialog}
+      <DialogWrapper id="blockedUsersDialog" onClose={closeBlockedUserDialog}>
+        <h3 className="font-bold text-lg">Blocked Users</h3>
+        {blockedUsers.length > 0 ? (
+          blockedUsers.map((user) => (
+            <div
+              key={user._id}
+              className=" rounded-full flex justify-between mx-3 my-3"
             >
-              Close
-            </button>
-          </div>
+              <div className="flex">
+                <img
+                  src={user.profilePhoto}
+                  alt={user.fullName}
+                  className="mr-4 w-12"
+                />
+                <p className="pt-2 pb-4">{user.fullName}</p>
+              </div>
+              <button className="btn" onClick={() => handleUnBlock(user._id)}>
+                Unblock
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No blocked users found.</p>
+        )}
+        <div className="modal-action w-full">
+          <button className="btn flex w-full" onClick={closeBlockedUserDialog}>
+            Close
+          </button>
         </div>
-      </dialog>
+      </DialogWrapper>
 
       <HomePage />
     </div>

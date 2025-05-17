@@ -3,10 +3,13 @@ import { Group } from "../models/groupModel.js";
 export const createGroup = async (req, res) => {
   try {
     const { groupName, memberIds, adminId } = req.body;
-    if (!groupName || !memberIds || !Array.isArray(memberIds)) {
+    if (!groupName) {
+      return res.status(400).json({ message: "Group name is required" });
+    }
+    if (!memberIds || memberIds.length === 1) {
       return res
         .status(400)
-        .json({ message: "Group name and member IDs are required" });
+        .json({ message: "At least one member ID is required" });
     }
     const existingGroup = await Group.findOne({ name: groupName });
     if (existingGroup) {

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import axiosInterceptors from "../components/app/axiosInterceptors";
 import toast from "react-hot-toast";
 import deleteIcon from "../assets/delete.png";
 import { useDispatch } from "react-redux";
 import { setGroups, updateSelectedUser } from "../redux/userSlice";
+import DialogWrapper from "./DialogWrapper";
 
 const CommanGroupModal = ({
   selectedUser,
@@ -17,7 +18,6 @@ const CommanGroupModal = ({
   createGroup,
 }) => {
   const dispatch = useDispatch();
-
   const deleteGroup = async (groupId) => {
     if (!groupId) return;
     try {
@@ -81,8 +81,14 @@ const CommanGroupModal = ({
   );
 
   return (
-    <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
-      <div className="modal-box">
+    <DialogWrapper
+      id="my_modal_5"
+      onClose={() => {
+        setGroupMember([]);
+        setGroupName("");
+      }}
+    >
+      <div>
         {selectedUser?.members?.length > 0 ? (
           <>
             <div className="flex flex-col">
@@ -242,7 +248,7 @@ const CommanGroupModal = ({
           </>
         )}
       </div>
-    </dialog>
+    </DialogWrapper>
   );
 };
 
