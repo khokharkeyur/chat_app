@@ -16,7 +16,14 @@ root.render(
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <App />
-        <Toaster />
+        <Toaster
+          toastOptions={{
+            position: "top-right",
+            style: {
+              zIndex: 1110,
+            },
+          }}
+        />
       </PersistGate>
     </Provider>
   </React.StrictMode>

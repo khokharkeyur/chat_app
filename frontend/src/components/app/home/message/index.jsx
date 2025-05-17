@@ -6,6 +6,7 @@ import useGetOtherUsers from "../../../../hooks/useGetOtherUsers";
 import axiosInterceptors from "../../axiosInterceptors";
 import toast from "react-hot-toast";
 import CommanGroupModal from "../../../../comman/CommanGroupModal";
+import DialogWrapper from "../../../../comman/DialogWrapper";
 
 function Message() {
   const { selectedUser, authUser, otherUsers } = useSelector(
@@ -37,6 +38,14 @@ function Message() {
   };
 
   async function createGroup() {
+    if (!groupName.trim()) {
+      toast.error("Group name is required");
+      return;
+    }
+    if (groupMember.length === 0) {
+      toast.error("Please add at least one member to the group");
+      return;
+    }
     try {
       const updatedGroupMembers = [...groupMember, { _id: authUserId }];
       const groupMemberIds = updatedGroupMembers.map((user) => user._id);
@@ -47,6 +56,13 @@ function Message() {
       };
 
       const response = await axiosInterceptors.post("/group/create", payload);
+      setGroupName("");
+      setGroupMember([]);
+
+      const modal = document.getElementById("my_modal_5");
+      if (modal) {
+        modal.close();
+      }
       toast.success(response.data.message);
     } catch (error) {
       console.error("Error creating group:", error);
@@ -80,11 +96,14 @@ function Message() {
                 </div>
                 <p>{selectedUser?.fullName || selectedUser?.name}</p>
               </button>
-              <dialog
+              <DialogWrapper
                 id="view_profile"
-                className="modal modal-bottom sm:modal-middle"
+                onClose={() => {
+                  setGroupMember([]);
+                  setGroupName("");
+                }}
               >
-                <div className="modal-box">
+                <div>
                   {selectedUser && (
                     <div className="flex flex-col justify-center items-center">
                       <img
@@ -125,7 +144,7 @@ function Message() {
                     </form>
                   </div>
                 </div>
-              </dialog>
+              </DialogWrapper>
             </div>
             <div className="flex flex-col flex-1">
               <div className="flex gap-2 flex-1 justify-end">
