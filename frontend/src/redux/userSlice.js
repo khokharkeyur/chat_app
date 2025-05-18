@@ -4,7 +4,7 @@ const userSlice = createSlice({
   name: "user",
   initialState: {
     authUser: null,
-    Groups: null,
+    groups: null,
     otherUsers: null,
     selectedUser: null,
     // searchUser: [],
@@ -18,7 +18,7 @@ const userSlice = createSlice({
       state.otherUsers = action.payload;
     },
     setGroups: (state, action) => {
-      state.Groups = action.payload;
+      state.groups = action.payload;
     },
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;

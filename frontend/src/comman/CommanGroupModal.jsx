@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import axiosInterceptors from "../components/app/axiosInterceptors";
 import toast from "react-hot-toast";
 import deleteIcon from "../assets/delete.png";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setGroups, updateSelectedUser } from "../redux/userSlice";
 import DialogWrapper from "./DialogWrapper";
 
@@ -18,15 +18,13 @@ const CommanGroupModal = ({
   createGroup,
 }) => {
   const dispatch = useDispatch();
+  const Groups = useSelector((store) => store.user.groups);
   const deleteGroup = async (groupId) => {
     if (!groupId) return;
     try {
       const response = await axiosInterceptors.delete(`/group/${groupId}`);
-      dispatch(
-        setGroups((prevGroups) =>
-          prevGroups.filter((group) => group.id !== groupId)
-        )
-      );
+      const updatedGroups = Groups?.filter((group) => group._id !== groupId);
+      dispatch(setGroups(updatedGroups));
       toast.success(response.data.message);
     } catch (error) {
       console.error("Error deleting group:", error);

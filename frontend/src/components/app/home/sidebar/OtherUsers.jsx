@@ -8,7 +8,7 @@ function OtherUsers() {
   useGetOtherUsers();
   useGetGroups();
   const otherUsers = useSelector((store) => store.user.otherUsers);
-  const groups = useSelector((store) => store.user.Groups);
+  const groups = useSelector((store) => store.user.groups);
   const authUser = useSelector((store) => store.user);
 
   const groupMembers = Array.isArray(groups)
@@ -16,7 +16,7 @@ function OtherUsers() {
         (group) => group?.members.map((member) => member?.fullName) || []
       )
     : [];
-
+console.log('groups', groups) 
   const authUserFullName = authUser?.authUser?.fullName;
   const isAuthUserInGroup = groupMembers.includes(authUserFullName);
 

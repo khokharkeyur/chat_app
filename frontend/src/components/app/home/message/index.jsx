@@ -98,10 +98,6 @@ function Message() {
               </button>
               <DialogWrapper
                 id="view_profile"
-                onClose={() => {
-                  setGroupMember([]);
-                  setGroupName("");
-                }}
               >
                 <div>
                   {selectedUser && (

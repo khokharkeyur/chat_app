@@ -24,7 +24,6 @@ function InnerMessage({ message, onDelete }) {
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
-console.log('selectedUser', selectedUser)
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -64,7 +63,6 @@ console.log('selectedUser', selectedUser)
   const handleEmoji = (messageId) => {
     setShowEmojiPicker((prev) => !prev);
     setEmojiTargetId(messageId);
-    console.log("messageId", messageId);
     handleClose();
   };
 
