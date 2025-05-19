@@ -2,10 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
-import { app, server } from "./socket/socket.js";
+import { app, server } from "./src/socket/socket.js";
 
 import cookieParser from "cookie-parser";
-import { setupRoutes } from "./routes/index.js";
+import { setupRoutes } from "./src/routes/index.js";
 
 dotenv.config();
 
