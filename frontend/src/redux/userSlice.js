@@ -4,7 +4,7 @@ const userSlice = createSlice({
   name: "user",
   initialState: {
     authUser: null,
-    Groups: null,
+    groups: null,
     otherUsers: null,
     selectedUser: null,
     // searchUser: [],
@@ -18,7 +18,7 @@ const userSlice = createSlice({
       state.otherUsers = action.payload;
     },
     setGroups: (state, action) => {
-      state.Groups = action.payload;
+      state.groups = action.payload;
     },
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
@@ -32,6 +32,14 @@ const userSlice = createSlice({
     setOnlineUsers: (state, action) => {
       state.onlineUsers = action.payload;
     },
+    removeGroup: (state, action) => {
+      state.groups = state.groups?.filter(
+        (group) => group._id !== action.payload
+      );
+      if (state.selectedUser?._id === action.payload) {
+        state.selectedUser = null;
+      }
+    },
   },
 });
 
@@ -42,5 +50,6 @@ export const {
   setOnlineUsers,
   setGroups,
   updateSelectedUser,
+  removeGroup,
 } = userSlice.actions;
 export default userSlice.reducer;

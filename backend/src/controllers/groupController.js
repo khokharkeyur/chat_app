@@ -1,4 +1,5 @@
 import { Group } from "../models/groupModel.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
 
 export const createGroup = async (req, res) => {
   try {
@@ -25,6 +26,18 @@ export const createGroup = async (req, res) => {
       profilePhoto: groupProfilePhoto,
     });
 
+    const populatedGroup = await Group.findById(newGroup._id).populate({
+      path: "members",
+      select: "-password -blockedUsers -__v",
+    });
+
+    memberIds.forEach((memberId) => {
+      const memberSocketId = getReceiverSocketId(memberId.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("groupCreated", populatedGroup);
+      }
+    });
+
     return res.status(201).json({
       message: "Group created successfully",
       group: newGroup,
@@ -46,6 +59,16 @@ export const deleteGroup = async (req, res) => {
     if (!deletedGroup) {
       return res.status(404).json({ message: "Group not found" });
     }
+    const populatedGroup = await Group.findById(id).populate({
+      path: "members",
+      select: "-password -blockedUsers -__v",
+    });
+    deletedGroup.members.forEach((memberId) => {
+      const memberSocketId = getReceiverSocketId(memberId.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("groupDeleted", { groupId: id });
+      }
+    });
 
     return res.status(200).json({
       message: "Group deleted successfully",
@@ -78,6 +101,29 @@ export const removeMemberFromGroup = async (req, res) => {
 
     await group.save();
 
+    const populatedGroup = await Group.findById(groupId).populate({
+      path: "members",
+      select: "-password -blockedUsers -__v",
+    });
+
+    const removedMemberSocketId = getReceiverSocketId(memberId);
+    if (removedMemberSocketId) {
+      io.to(removedMemberSocketId).emit("memberRemoved", {
+        groupId,
+        memberId,
+        updatedGroup: populatedGroup,
+      });
+    }
+    group.members.forEach((remainingMemberId) => {
+      const memberSocketId = getReceiverSocketId(remainingMemberId.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("memberRemoved", {
+          groupId,
+          memberId,
+          updatedGroup: populatedGroup,
+        });
+      }
+    });
     return res.status(200).json({
       message: "Member removed successfully",
       group,

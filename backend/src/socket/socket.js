@@ -53,6 +53,11 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("joinGroup", (groupId) => {
+    socket.join(groupId);
+    console.log(`User ${userId} joined group ${groupId}`);
+  });
+
   socket.on("disconnect", () => {
     delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));

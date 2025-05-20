@@ -7,8 +7,13 @@ import axiosInterceptors from "../../axiosInterceptors";
 import toast from "react-hot-toast";
 import CommanGroupModal from "../../../../comman/CommanGroupModal";
 import DialogWrapper from "../../../../comman/DialogWrapper";
+import useGetRealTimeEvents from "../../../../hooks/useGetRealTimeEvents";
+import useGetGroups from "../../../../hooks/usegetGroups";
 
 function Message() {
+  useGetRealTimeEvents();
+  useGetGroups();
+
   const { selectedUser, authUser, otherUsers } = useSelector(
     (store) => store.user
   );
@@ -96,13 +101,7 @@ function Message() {
                 </div>
                 <p>{selectedUser?.fullName || selectedUser?.name}</p>
               </button>
-              <DialogWrapper
-                id="view_profile"
-                onClose={() => {
-                  setGroupMember([]);
-                  setGroupName("");
-                }}
-              >
+              <DialogWrapper id="view_profile">
                 <div>
                   {selectedUser && (
                     <div className="flex flex-col justify-center items-center">
