@@ -32,6 +32,14 @@ const userSlice = createSlice({
     setOnlineUsers: (state, action) => {
       state.onlineUsers = action.payload;
     },
+    removeGroup: (state, action) => {
+      state.groups = state.groups?.filter(
+        (group) => group._id !== action.payload
+      );
+      if (state.selectedUser?._id === action.payload) {
+        state.selectedUser = null;
+      }
+    },
   },
 });
 
@@ -42,5 +50,6 @@ export const {
   setOnlineUsers,
   setGroups,
   updateSelectedUser,
+  removeGroup,
 } = userSlice.actions;
 export default userSlice.reducer;

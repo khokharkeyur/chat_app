@@ -16,7 +16,6 @@ function OtherUsers() {
         (group) => group?.members.map((member) => member?.fullName) || []
       )
     : [];
-console.log('groups', groups) 
   const authUserFullName = authUser?.authUser?.fullName;
   const isAuthUserInGroup = groupMembers.includes(authUserFullName);
 
