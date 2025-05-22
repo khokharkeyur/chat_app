@@ -30,17 +30,18 @@ function SendInput() {
     if (!message.trim()) return;
     try {
       let res;
+      const type = selectedUser?.members ? "group" : "user";
       if (editMessage) {
         socket.emit("editMessage", editMessage._id, message);
 
         await axiosInterceptors.put(`/message/edit/${editMessage._id}`, {
-          message: message,
+          message,
         });
         dispatch(setEditMessage(null));
       } else {
         res = await axiosInterceptors.post(
           `/message/send/${selectedUser?._id}`,
-          { message }
+          { message, type }
         );
 
         dispatch(setMessages([...messages, res?.data?.newMessage]));
