@@ -6,13 +6,26 @@ import { setGroups, removeGroup } from "../redux/userSlice";
 const useGetRealTimeEvents = () => {
   const { socket } = useSelector((store) => store.socket);
   const { messages } = useSelector((store) => store.message);
-  const { groups } = useSelector((store) => store.user);
+  const { groups, selectedUser } = useSelector((store) => store.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (socket) {
       socket.on("newMessage", (newMessage) => {
-        dispatch(setMessages([...messages, newMessage]));
+        if (
+          newMessage.type === "group" &&
+          selectedUser &&
+          selectedUser._id === newMessage.groupId
+        ) {
+          dispatch(setMessages((prev) => [...(prev || []), newMessage]));
+        } else if (
+          newMessage.type === "user" &&
+          selectedUser &&
+          (selectedUser._id === newMessage.senderId ||
+            selectedUser._id === newMessage.receiverId)
+        ) {
+          dispatch(setMessages((prev) => [...(prev || []), newMessage]));
+        }
       });
 
       socket.on("messageUpdated", (updatedMessage) => {

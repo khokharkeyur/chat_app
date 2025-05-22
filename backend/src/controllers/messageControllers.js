@@ -7,8 +7,7 @@ export const sendMessage = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
-    const { message } = req.body;
-
+    const { message, type } = req.body;
     if (!message || message.trim() === "") {
       return res.status(400).json({ error: "Message is required" });
     }
@@ -16,19 +15,17 @@ export const sendMessage = async (req, res) => {
     const group = await Group.findById(receiverId);
     let newMessage;
 
-    if (group) {
-      // GROUP MESSAGE
+    if (group && type === "group") {
       const membersToSend = group.members.filter(
         (member) => member.toString() !== senderId
       );
 
       newMessage = await Message.create({
         senderId,
-        receiverId, // group ID as receiver
+        receiverId,
         message,
       });
 
-      // Save message in conversation with group
       let gotConversation = await Conversation.findOne({
         participants: { $all: group.members, $size: group.members.length },
       });
@@ -44,22 +41,26 @@ export const sendMessage = async (req, res) => {
       gotConversation.messages.push(newMessage._id);
       await Promise.all([gotConversation.save(), newMessage.save()]);
 
-      // Emit message to each group member
       membersToSend.forEach((memberId) => {
         const receiverSocketId = getReceiverSocketId(memberId.toString());
         if (receiverSocketId) {
-          io.to(receiverSocketId).emit("newMessage", newMessage);
+          io.to(receiverSocketId).emit("newMessage", {
+            ...newMessage.toObject(),
+            type: "group",
+            groupId: group._id,
+          });
         }
       });
     } else {
-      // 1-ON-1 MESSAGE
       let gotConversation = await Conversation.findOne({
         participants: { $all: [senderId, receiverId] },
+        isGroup: false,
       });
 
       if (!gotConversation) {
         gotConversation = await Conversation.create({
           participants: [senderId, receiverId],
+          isGroup: false,
         });
       }
 
@@ -74,7 +75,10 @@ export const sendMessage = async (req, res) => {
 
       const receiverSocketId = getReceiverSocketId(receiverId);
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("newMessage", newMessage);
+        io.to(receiverSocketId).emit("newMessage", {
+          ...newMessage.toObject(),
+          type: "user",
+        });
       }
     }
 
@@ -88,9 +92,14 @@ export const getMessage = async (req, res) => {
   try {
     const receiverId = req.params.id;
     const senderId = req.id;
+    console.log("receiverId", receiverId);
+    console.log("senderId", senderId);
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
+      isGroup: false,
     }).populate("messages");
+    console.log(conversation, "conversation");
+
     return res.status(200).json(conversation?.messages);
   } catch (error) {
     console.log(error);

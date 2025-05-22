@@ -8,7 +8,10 @@ const messageSlice = createSlice({
   },
   reducers: {
     setMessages: (state, action) => {
-      state.messages = action.payload;
+      state.messages =
+        typeof action.payload === "function"
+          ? action.payload(state.messages)
+          : action.payload;
     },
     setEditMessage: (state, action) => {
       state.editMessage = action.payload;
