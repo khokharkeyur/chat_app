@@ -26,22 +26,27 @@ io.on("connection", (socket) => {
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-  socket.on("editMessage", async (messageId, newContent, emoji) => {
-    try {
-      const updateData = {};
-      if (newContent?.trim()) updateData.message = newContent;
-      if (emoji) updateData.emoji = emoji;
-      const updatedMessage = await Message.findByIdAndUpdate(
-        messageId,
-        updateData,
-        { new: true }
-      );
+  socket.on(
+    "editMessage",
+    async (messageId, newContent, emoji, emojiSender) => {
+      try {
+        const updateData = {};
+        if (newContent?.trim()) updateData.message = newContent;
+        if (emoji) updateData.emoji = emoji;
+        if (emojiSender) updateData.emojiSender = emojiSender;
 
-      io.emit("messageUpdated", updatedMessage);
-    } catch (error) {
-      console.error("Error updating message:", error);
+        const updatedMessage = await Message.findByIdAndUpdate(
+          messageId,
+          updateData,
+          { new: true }
+        ).populate("emojiSender", "username profilePhoto");
+
+        io.emit("messageUpdated", updatedMessage);
+      } catch (error) {
+        console.error("Error updating message:", error);
+      }
     }
-  });
+  );
 
   socket.on("deleteMessage", async (messageId) => {
     try {

@@ -97,7 +97,13 @@ export const getMessage = async (req, res) => {
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
       isGroup: false,
-    }).populate("messages");
+    }).populate({
+      path: "messages",
+      populate: {
+        path: "emojiSender",
+        select: "username profilePhoto",
+      },
+    });
     console.log(conversation, "conversation");
 
     return res.status(200).json(conversation?.messages);
@@ -118,7 +124,13 @@ export const getGroupMessage = async (req, res) => {
     let conversation = await Conversation.findOne({
       groupId: groupId,
       isGroup: true,
-    }).populate("messages");
+    }).populate({
+      path: "messages",
+      populate: {
+        path: "emojiSender",
+        select: "username profilePhoto",
+      },
+    });
 
     if (!conversation) {
       conversation = await Conversation.create({
@@ -166,10 +178,11 @@ export const deleteMessage = async (req, res) => {
 export const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    const { message: newMessageContent, emoji } = req.body;
+    const { message: newMessageContent, emoji, emojiSender } = req.body;
     const updateData = {};
     if (newMessageContent?.trim()) updateData.message = newMessageContent;
     if (emoji) updateData.emoji = emoji;
+    if (emojiSender) updateData.emojiSender = emojiSender;
 
     const updatedMessage = await Message.findByIdAndUpdate(
       messageId,
