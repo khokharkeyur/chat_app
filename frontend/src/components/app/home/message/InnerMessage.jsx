@@ -70,10 +70,11 @@ function InnerMessage({ message, onDelete }) {
     console.log("Reaction selected:", emojiData.emoji);
     const emoji = emojiData.emoji;
     if (emoji && emojiTargetId) {
-      socket.emit("editMessage", emojiTargetId, null, emoji);
+      socket.emit("editMessage", emojiTargetId, null, emoji, authUser._id);
 
       await axiosInterceptors.put(`/message/edit/${emojiTargetId}`, {
         emoji: emoji,
+        emojiSender: authUser._id,
       });
     }
 
@@ -152,14 +153,19 @@ function InnerMessage({ message, onDelete }) {
           />
         </Popover>
 
-        {message.emoji && (
-          <span
-            className={`absolute bottom-[-10px] bg-gray-700 rounded-full ${authUser?._id === message?.senderId ? "right-0" : "left-0"} `}
+        {message.emoji && message.emojiSender && (
+          <div
+            className={`absolute bottom-[-20px] flex items-center gap-1 text-xs bg-gray-800 text-white p-1 px-2 rounded-full ${authUser?._id === message?.senderId ? "right-0" : "left-0"}`}
           >
-            {message.emoji}
-          </span>
+            <img
+              src={message.emojiSender.profilePhoto}
+              alt="Emoji Sender"
+              className="w-4 h-4 rounded-full"
+            />
+            <span>{message.emoji}</span>
+            <span className="ml-1">by {message.emojiSender.username}</span>
+          </div>
         )}
-
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}

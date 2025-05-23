@@ -17,6 +17,10 @@ const messageModel = new mongoose.Schema(
       required: true,
     },
     emoji: { type: String, default: "" },
+    emojiSender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );
