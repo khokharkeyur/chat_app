@@ -23,22 +23,39 @@ function MessagePopup({
         vertical: "top",
         horizontal: "right",
       }}
+      PaperProps={{
+        sx: {
+          backgroundColor: "transparent",
+          boxShadow: "none",
+        },
+      }}
     >
-      <MenuList>
-        <MenuItem onClick={onEmoji}>Add Emoji</MenuItem>
-        <MenuItem
-          onClick={onEdit}
-          sx={{ display: authUser ? "block" : "none" }}
-        >
-          Edit
-        </MenuItem>
-        <MenuItem
-          onClick={onDelete}
-          sx={{ display: authUser ? "block" : "none" }}
-        >
-          Delete
-        </MenuItem>
-      </MenuList>
+      <div className="bg-neutral text-neutral-content rounded-lg shadow-lg border border-neutral-700 min-w-[130px] py-2">
+        <ul className="flex flex-col">
+          <li
+            className="px-4 py-2 hover:bg-neutral-700 cursor-pointer text-sm"
+            onClick={onEmoji}
+          >
+            Add Emoji
+          </li>
+          {authUser && (
+            <li
+              className="px-4 py-2 hover:bg-neutral-700 cursor-pointer text-sm"
+              onClick={onEdit}
+            >
+              Edit
+            </li>
+          )}
+          {authUser && (
+            <li
+              className="px-4 py-2 hover:bg-red-700 cursor-pointer text-sm text-red-300"
+              onClick={onDelete}
+            >
+              Delete
+            </li>
+          )}
+        </ul>
+      </div>
     </Popover>
   );
 }

@@ -17,6 +17,9 @@ function InnerMessage({ message, onDelete }) {
   const emojiPickerRef = useRef(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [emojiTargetId, setEmojiTargetId] = useState(null);
+  const [emojiAnchorEl, setEmojiAnchorEl] = useState(null);
+  const [emojiSenderDetails, setEmojiSenderDetails] = useState(null);
+  const [popupPosition, setPopupPosition] = useState("bottom");
 
   const createdAt = new Date(message.createdAt);
   const formattedTime = createdAt.toTimeString().split(" ")[0];
@@ -40,6 +43,15 @@ function InnerMessage({ message, onDelete }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showEmojiPicker]);
+
+  useEffect(() => {
+    if (anchorEl) {
+      const rect = anchorEl.getBoundingClientRect();
+      const buffer = 200;
+      const shouldShowAbove = window.innerHeight - rect.bottom < buffer;
+      setPopupPosition(shouldShowAbove ? "top" : "bottom");
+    }
+  }, [anchorEl]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -127,33 +139,7 @@ function InnerMessage({ message, onDelete }) {
         >
           <img src={downArrow} alt="" className="w-4 h-4" />
         </span>
-
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-        >
-          <MessagePopup
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            onEdit={() => handleEdit(message._id)}
-            onDelete={() => handleDelete(message._id)}
-            authUser={authUser?._id === message?.senderId}
-            onEmoji={() => handleEmoji(message._id)}
-          />
-        </Popover>
-
-        {message.emoji && message.emojiSender && (
+        {/* {message.emoji && message.emojiSender && (
           <div
             className={`absolute bottom-[-20px] flex items-center gap-1 text-xs bg-gray-800 text-white p-1 px-2 rounded-full ${authUser?._id === message?.senderId ? "right-0" : "left-0"}`}
           >
@@ -165,6 +151,18 @@ function InnerMessage({ message, onDelete }) {
             <span>{message.emoji}</span>
             <span className="ml-1">by {message.emojiSender.username}</span>
           </div>
+        )} */}
+        {message.emoji && (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              setEmojiAnchorEl(e.currentTarget);
+              setEmojiSenderDetails(message.emojiSender);
+            }}
+            className={`cursor-pointer absolute bottom-[-10px] bg-gray-700 text-white px-2 py-1 rounded-full text-sm ${authUser?._id === message?.senderId ? "right-0" : "left-0"}`}
+          >
+            {message.emoji}
+          </span>
         )}
         {showEmojiPicker && (
           <div
@@ -180,6 +178,65 @@ function InnerMessage({ message, onDelete }) {
           </div>
         )}
       </div>
+      <Popover
+        open={Boolean(emojiAnchorEl)}
+        anchorEl={emojiAnchorEl}
+        onClose={() => setEmojiAnchorEl(null)}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        PaperProps={{
+          sx: {
+            marginLeft: authUser?._id === message?.senderId ? "0" : "5px",
+            backgroundColor: "transparent",
+            boxShadow: "none",
+          },
+        }}
+      >
+        {emojiSenderDetails ? (
+          <div
+            className="p-4 max-w-xs rounded-lg bg-neutral text-neutral-content shadow-lg border border-neutral-700"
+            style={{
+              backgroundColor: "var(--fallback-b1, oklch(var(--b1) / 1))",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src={emojiSenderDetails?.profilePhoto}
+                alt="Sender"
+                className="w-10 h-10 rounded-full border border-gray-600"
+              />
+              <div>
+                <p className="text-sm font-semibold">
+                  {emojiSenderDetails.username}
+                </p>
+                <p className="text-xs text-gray-400">
+                  Reacted with {message.emoji}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 rounded-lg bg-neutral text-neutral-content shadow-lg">
+            Loading...
+          </div>
+        )}
+      </Popover>
+
+      <MessagePopup
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        onEdit={() => handleEdit(message._id)}
+        onDelete={() => handleDelete(message._id)}
+        authUser={authUser?._id === message?.senderId}
+        onEmoji={() => handleEmoji(message._id)}
+      />
     </div>
   );
 }
