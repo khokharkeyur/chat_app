@@ -16,11 +16,16 @@ const messageModel = new mongoose.Schema(
       type: String,
       required: true,
     },
-    emoji: { type: String, default: "" },
-    emojiSender: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+    emoji: [
+      {
+        emoji: { type: String, required: true },
+        sender: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

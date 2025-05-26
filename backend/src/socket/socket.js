@@ -30,24 +30,34 @@ io.on("connection", (socket) => {
     "editMessage",
     async (messageId, newContent, emoji, emojiSender) => {
       try {
-        const updateData = {};
-        if (newContent?.trim()) updateData.message = newContent;
-        if (emoji) updateData.emoji = emoji;
-        if (emojiSender) updateData.emojiSender = emojiSender;
+        let updatedMessage;
+        if (emoji && emojiSender) {
+          await Message.findByIdAndUpdate(messageId, {
+            $pull: { emoji: { sender: emojiSender } },
+          });
+          await Message.findByIdAndUpdate(messageId, {
+            $push: { emoji: { emoji, sender: emojiSender } },
+          });
+          updatedMessage = await Message.findById(messageId).populate(
+            "emoji.sender",
+            "username profilePhoto"
+          );
+        } else if (newContent?.trim()) {
+          updatedMessage = await Message.findByIdAndUpdate(
+            messageId,
+            { message: newContent },
+            { new: true }
+          );
+        }
 
-        const updatedMessage = await Message.findByIdAndUpdate(
-          messageId,
-          updateData,
-          { new: true }
-        ).populate("emojiSender", "username profilePhoto");
-
-        io.emit("messageUpdated", updatedMessage);
+        if (updatedMessage) {
+          io.emit("messageUpdated", updatedMessage);
+        }
       } catch (error) {
         console.error("Error updating message:", error);
       }
     }
   );
-
   socket.on("deleteMessage", async (messageId) => {
     try {
       const deletedMessage = await Message.findByIdAndDelete(messageId);
