@@ -26,23 +26,38 @@ io.on("connection", (socket) => {
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-  socket.on("editMessage", async (messageId, newContent, emoji) => {
-    try {
-      const updateData = {};
-      if (newContent?.trim()) updateData.message = newContent;
-      if (emoji) updateData.emoji = emoji;
-      const updatedMessage = await Message.findByIdAndUpdate(
-        messageId,
-        updateData,
-        { new: true }
-      );
+  socket.on(
+    "editMessage",
+    async (messageId, newContent, emoji, emojiSender) => {
+      try {
+        let updatedMessage;
+        if (emoji && emojiSender) {
+          await Message.findByIdAndUpdate(messageId, {
+            $pull: { emoji: { sender: emojiSender } },
+          });
+          await Message.findByIdAndUpdate(messageId, {
+            $push: { emoji: { emoji, sender: emojiSender } },
+          });
+          updatedMessage = await Message.findById(messageId).populate(
+            "emoji.sender",
+            "username profilePhoto"
+          );
+        } else if (newContent?.trim()) {
+          updatedMessage = await Message.findByIdAndUpdate(
+            messageId,
+            { message: newContent },
+            { new: true }
+          );
+        }
 
-      io.emit("messageUpdated", updatedMessage);
-    } catch (error) {
-      console.error("Error updating message:", error);
+        if (updatedMessage) {
+          io.emit("messageUpdated", updatedMessage);
+        }
+      } catch (error) {
+        console.error("Error updating message:", error);
+      }
     }
-  });
-
+  );
   socket.on("deleteMessage", async (messageId) => {
     try {
       const deletedMessage = await Message.findByIdAndDelete(messageId);

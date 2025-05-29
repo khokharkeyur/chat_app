@@ -97,7 +97,13 @@ export const getMessage = async (req, res) => {
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
       isGroup: false,
-    }).populate("messages");
+    }).populate({
+      path: "messages",
+      populate: {
+        path: "emoji.sender",
+        select: "username profilePhoto",
+      },
+    });
     console.log(conversation, "conversation");
 
     return res.status(200).json(conversation?.messages);
@@ -118,7 +124,13 @@ export const getGroupMessage = async (req, res) => {
     let conversation = await Conversation.findOne({
       groupId: groupId,
       isGroup: true,
-    }).populate("messages");
+    }).populate({
+      path: "messages",
+      populate: {
+        path: "emoji.sender",
+        select: "username profilePhoto",
+      },
+    });
 
     if (!conversation) {
       conversation = await Conversation.create({
@@ -162,29 +174,37 @@ export const deleteMessage = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
-
 export const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    const { message: newMessageContent, emoji } = req.body;
-    const updateData = {};
-    if (newMessageContent?.trim()) updateData.message = newMessageContent;
-    if (emoji) updateData.emoji = emoji;
+    const { message: newMessageContent, emoji, emojiSender } = req.body;
+    let updatedMessage;
 
-    const updatedMessage = await Message.findByIdAndUpdate(
-      messageId,
-      updateData,
-      { new: true }
-    );
+    if (emoji && emojiSender) {
+      // Remove any existing emoji from this sender, then add the new one
+      await Message.findByIdAndUpdate(messageId, {
+        $pull: { emoji: { sender: emojiSender } },
+      });
+      await Message.findByIdAndUpdate(messageId, {
+        $push: { emoji: { emoji, sender: emojiSender } },
+      });
+      updatedMessage = await Message.findById(messageId).populate(
+        "emoji.sender",
+        "username profilePhoto"
+      );
+    } else if (newMessageContent?.trim()) {
+      updatedMessage = await Message.findByIdAndUpdate(
+        messageId,
+        { message: newMessageContent },
+        { new: true }
+      );
+    }
 
     if (!updatedMessage) {
       return res.status(404).json({ error: "Message not found" });
     }
 
-    const receiverSocketId = getReceiverSocketId(updatedMessage.receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("editMessage", updatedMessage);
-    }
+    io.emit("messageUpdated", updatedMessage);
 
     return res.status(200).json({ updatedMessage });
   } catch (error) {

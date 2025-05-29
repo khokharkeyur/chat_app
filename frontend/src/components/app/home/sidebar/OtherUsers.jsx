@@ -7,24 +7,23 @@ import { useSelector } from "react-redux";
 function OtherUsers() {
   useGetOtherUsers();
   useGetGroups();
-  const otherUsers = useSelector((store) => store.user.otherUsers);
-  const groups = useSelector((store) => store.user.groups);
-  const authUser = useSelector((store) => store.user);
+  const { authUser, groups, otherUsers } = useSelector((store) => store.user);
 
-  const groupMembers = Array.isArray(groups)
-    ? groups?.flatMap(
-        (group) => group?.members.map((member) => member?.fullName) || []
+  const authUserFullName = authUser?.fullName || "";
+
+  const groupsWithAuthUser = Array.isArray(groups)
+    ? groups.filter((group) =>
+        group?.members?.some((member) => member?.fullName === authUserFullName)
       )
     : [];
-  const authUserFullName = authUser?.authUser?.fullName;
-  const isAuthUserInGroup = groupMembers.includes(authUserFullName);
-
   if (!otherUsers) return null;
 
   return (
     <div className="overflow-auto flex-1 sm:block">
-      {isAuthUserInGroup &&
-        groups?.map((group) => <OtherUser key={group._id} user={group} />)}
+      {groupsWithAuthUser &&
+        groupsWithAuthUser?.map((group) => (
+          <OtherUser key={group._id} user={group} />
+        ))}
       {otherUsers?.map((user) => (
         <OtherUser key={user._id} user={user} />
       ))}

@@ -2,16 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import downArrow from "../../../../assets/down-arrow.svg";
 import MessagePopup from "./MessagePopup";
-import { Popover } from "@mui/material";
 import { setEditMessage } from "../../../../redux/messageSlice";
 import Picker from "emoji-picker-react";
 import axiosInterceptors from "../../axiosInterceptors";
+import EmojiReactions from "./EmojiReactions";
 
 function InnerMessage({ message, onDelete }) {
   const chatRef = useRef();
   const dispatch = useDispatch();
   const { authUser, selectedUser } = useSelector((store) => store.user);
-  const { socket } = useSelector((store) => store.socket);
   const { editMessage } = useSelector((store) => store.message);
   const [anchorEl, setAnchorEl] = useState(null);
   const emojiPickerRef = useRef(null);
@@ -65,15 +64,13 @@ function InnerMessage({ message, onDelete }) {
     setEmojiTargetId(messageId);
     handleClose();
   };
-
   const handleReaction = async (emojiData) => {
     console.log("Reaction selected:", emojiData.emoji);
     const emoji = emojiData.emoji;
     if (emoji && emojiTargetId) {
-      socket.emit("editMessage", emojiTargetId, null, emoji);
-
       await axiosInterceptors.put(`/message/edit/${emojiTargetId}`, {
         emoji: emoji,
+        emojiSender: authUser._id,
       });
     }
 
@@ -126,40 +123,12 @@ function InnerMessage({ message, onDelete }) {
         >
           <img src={downArrow} alt="" className="w-4 h-4" />
         </span>
-
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-        >
-          <MessagePopup
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            onEdit={() => handleEdit(message._id)}
-            onDelete={() => handleDelete(message._id)}
-            authUser={authUser?._id === message?.senderId}
-            onEmoji={() => handleEmoji(message._id)}
+        {message.emoji && message.emoji.length > 0 && (
+          <EmojiReactions
+            reactions={message.emoji}
+            isOwnMessage={authUser._id === message.senderId}
           />
-        </Popover>
-
-        {message.emoji && (
-          <span
-            className={`absolute bottom-[-10px] bg-gray-700 rounded-full ${authUser?._id === message?.senderId ? "right-0" : "left-0"} `}
-          >
-            {message.emoji}
-          </span>
         )}
-
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
@@ -174,6 +143,16 @@ function InnerMessage({ message, onDelete }) {
           </div>
         )}
       </div>
+
+      <MessagePopup
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        onEdit={() => handleEdit(message._id)}
+        onDelete={() => handleDelete(message._id)}
+        authUser={authUser?._id === message?.senderId}
+        onEmoji={() => handleEmoji(message._id)}
+      />
     </div>
   );
 }
