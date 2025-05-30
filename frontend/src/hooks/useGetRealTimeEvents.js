@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setMessages } from "../redux/messageSlice";
-import { setGroups, removeGroup } from "../redux/userSlice";
+import { setGroups, removeGroup, updateSelectedUser } from "../redux/userSlice";
 
 const useGetRealTimeEvents = () => {
   const { socket } = useSelector((store) => store.socket);
@@ -50,6 +50,36 @@ const useGetRealTimeEvents = () => {
         dispatch(removeGroup(groupId));
       });
 
+      socket.on("memberAdded", ({ groupId, memberId, updatedGroup }) => {
+        dispatch(
+          setGroups((prev) => {
+            const exists = prev?.some((g) => g._id === groupId);
+            if (exists) {
+              return prev.map((g) => (g._id === groupId ? updatedGroup : g));
+            } else {
+              return [...(prev || []), updatedGroup];
+            }
+          })
+        );
+      });
+
+      socket.on("groupUpdated", ({ groupId, updatedGroup }) => {
+        console.log("groups", groups);
+        console.log("updatedGroup", updatedGroup);
+        const updatedGroups = groups?.map((group) =>
+          group._id === groupId
+            ? {
+                ...group,
+                members: updatedGroup?.members,
+              }
+            : group
+        );
+        dispatch(setGroups(updatedGroups));
+        if (selectedUser?._id === groupId) {
+          dispatch(updateSelectedUser(updatedGroup));
+        }
+      });
+
       socket.on("memberRemoved", ({ groupId, memberId }) => {
         const updatedGroups = groups?.map((group) =>
           group._id === groupId
@@ -62,6 +92,16 @@ const useGetRealTimeEvents = () => {
             : group
         );
         dispatch(setGroups(updatedGroups));
+        if (selectedUser?._id === groupId) {
+          dispatch(
+            updateSelectedUser({
+              ...selectedUser,
+              members: selectedUser.members.filter(
+                (member) => member._id !== memberId
+              ),
+            })
+          );
+        }
       });
     }
 
@@ -72,6 +112,8 @@ const useGetRealTimeEvents = () => {
       socket?.off("groupCreated");
       socket?.off("groupDeleted");
       socket?.off("memberRemoved");
+      socket?.off("memberAdded");
+      socket?.off("groupUpdated");
     };
   }, [socket, messages, groups, dispatch]);
 

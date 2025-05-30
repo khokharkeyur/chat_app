@@ -134,6 +134,68 @@ export const removeMemberFromGroup = async (req, res) => {
   }
 };
 
+export const addMembersToGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { memberIds } = req.body; // Expecting an array of member IDs
+
+    if (!groupId || !Array.isArray(memberIds) || memberIds.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Group ID and memberIds array are required" });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Add only new members (avoid duplicates)
+    const newMembers = memberIds.filter(
+      (id) => !group.members.map((m) => m.toString()).includes(id)
+    );
+    group.members.push(...newMembers);
+
+    await group.save();
+
+    const populatedGroup = await Group.findById(groupId).populate({
+      path: "members",
+      select: "-password -blockedUsers -__v",
+    });
+
+    // Notify newly added members
+    newMembers.forEach((memberId) => {
+      const memberSocketId = getReceiverSocketId(memberId.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("memberAdded", {
+          groupId,
+          memberId,
+          updatedGroup: populatedGroup,
+        });
+      }
+    });
+
+    // Notify all group members (including existing) about the update
+    group.members.forEach((memberId) => {
+      const memberSocketId = getReceiverSocketId(memberId.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("groupUpdated", {
+          groupId,
+          updatedGroup: populatedGroup,
+        });
+      }
+    });
+
+    return res.status(200).json({
+      message: "Members added successfully",
+      group: populatedGroup,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const getAllGroups = async (req, res) => {
   try {
     const groups = await Group.find().populate({
