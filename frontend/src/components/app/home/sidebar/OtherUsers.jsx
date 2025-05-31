@@ -17,6 +17,7 @@ function OtherUsers() {
       )
     : [];
   if (!otherUsers) return null;
+  console.log("groups", groups);
 
   return (
     <div className="overflow-auto flex-1 sm:block">

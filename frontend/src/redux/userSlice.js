@@ -18,6 +18,7 @@ const userSlice = createSlice({
       state.otherUsers = action.payload;
     },
     setGroups: (state, action) => {
+      // console.log('action', action.payload)
       state.groups = action.payload;
     },
     setSelectedUser: (state, action) => {

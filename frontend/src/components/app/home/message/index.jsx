@@ -22,9 +22,6 @@ function Message() {
   const [groupName, setGroupName] = React.useState("");
 
   const authUserId = authUser?._id;
-  function newGroup() {
-    if (!otherUsers) return;
-  }
   function viewProfile() {
     if (!otherUsers) return;
   }
@@ -151,7 +148,6 @@ function Message() {
                   className="btn"
                   onClick={() => {
                     document.getElementById("my_modal_5").showModal();
-                    newGroup();
                   }}
                 >
                   {selectedUser?.members?.length > 0
@@ -166,7 +162,6 @@ function Message() {
                   setGroupName={setGroupName}
                   groupMember={groupMember}
                   setGroupMember={setGroupMember}
-                  newGroup={newGroup}
                   createGroup={createGroup}
                 />
               </div>
