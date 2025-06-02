@@ -177,10 +177,19 @@ export const deleteMessage = async (req, res) => {
 export const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    const { message: newMessageContent, emoji, emojiSender } = req.body;
+    const { message: newMessageContent, emoji, emojiSender,removeEmoji } = req.body;
     let updatedMessage;
 
-    if (emoji && emojiSender) {
+    if (removeEmoji && emoji && emojiSender) {
+      // Remove the specific emoji from this sender
+      await Message.findByIdAndUpdate(messageId, {
+        $pull: { emoji: { emoji, sender: emojiSender } },
+      });
+      updatedMessage = await Message.findById(messageId).populate(
+        "emoji.sender",
+        "username profilePhoto"
+      );
+    } else if (emoji && emojiSender) {
       // Remove any existing emoji from this sender, then add the new one
       await Message.findByIdAndUpdate(messageId, {
         $pull: { emoji: { sender: emojiSender } },
