@@ -65,7 +65,6 @@ function InnerMessage({ message, onDelete }) {
     handleClose();
   };
   const handleReaction = async (emojiData) => {
-    console.log("Reaction selected:", emojiData.emoji);
     const emoji = emojiData.emoji;
     if (emoji && emojiTargetId) {
       await axiosInterceptors.put(`/message/edit/${emojiTargetId}`, {
@@ -76,6 +75,18 @@ function InnerMessage({ message, onDelete }) {
 
     setShowEmojiPicker(false);
     setEmojiTargetId(null);
+  };
+  const handleRemoveReaction = async (emoji, emojiSender) => {
+    if (!emoji || !emojiSender) return;
+    try {
+      await axiosInterceptors.put(`/message/edit/${message._id}`, {
+        emoji,
+        emojiSender,
+        removeEmoji: true,
+      });
+    } catch (error) {
+      console.error("Error removing emoji reaction:", error);
+    }
   };
   const open = Boolean(anchorEl);
   const id = open ? "message-popup" : undefined;
@@ -127,6 +138,8 @@ function InnerMessage({ message, onDelete }) {
           <EmojiReactions
             reactions={message.emoji}
             isOwnMessage={authUser._id === message.senderId}
+            auth={authUser}
+            onRemoveReaction={handleRemoveReaction}
           />
         )}
         {showEmojiPicker && (
