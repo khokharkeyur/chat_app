@@ -13,7 +13,12 @@ const emojiReactions = (emojiArray = []) => {
   return Object.values(grouped);
 };
 
-const EmojiReactions = ({ reactions = [], isOwnMessage = false }) => {
+const EmojiReactions = ({
+  reactions = [],
+  isOwnMessage = false,
+  auth,
+  onRemoveReaction,
+}) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const groupedReactions = useMemo(
@@ -81,21 +86,35 @@ const EmojiReactions = ({ reactions = [], isOwnMessage = false }) => {
               reactions.map((r, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 py-2 hover:bg-neutral-700/30 rounded-lg px-1"
+                  onClick={() => {
+                    if (
+                      r.sender?.username === auth?.username &&
+                      onRemoveReaction
+                    ) {
+                      onRemoveReaction(r.emoji, r.sender?._id);
+                    }
+                  }}
+                  className={`flex items-center justify-between gap-3 py-2 hover:bg-neutral-700/30 rounded-lg px-1 ${r.sender?.username === auth?.username ? "cursor-pointer" : ""}`}
                 >
-                  <img
-                    src={r.sender?.profilePhoto}
-                    alt="Sender"
-                    className="w-8 h-8 rounded-full border border-gray-600 object-cover"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate">
-                      {r.sender?.username || "Unknown"}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate">
-                      Reacted with {r.emoji}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={r.sender?.profilePhoto}
+                      alt="Sender"
+                      className="w-8 h-8 rounded-full border border-gray-600 object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold">
+                        {r.sender?.username === auth?.username
+                          ? "You"
+                          : r.sender?.username || "Unknown"}
+                      </p>
+                      <p className="text-xs font-normal">
+                        {r.sender?.username === auth?.username &&
+                          "Click to remove"}
+                      </p>
+                    </div>
                   </div>
+                  <p className="text-xs text-gray-400">{r.emoji}</p>
                 </div>
               ))
             ) : (
