@@ -28,10 +28,18 @@ io.on("connection", (socket) => {
 
   socket.on(
     "editMessage",
-    async (messageId, newContent, emoji, emojiSender) => {
+    async (messageId, newContent, emoji, emojiSender,removeEmoji) => {
       try {
         let updatedMessage;
-        if (emoji && emojiSender) {
+        if (removeEmoji && emoji && emojiSender) {
+          await Message.findByIdAndUpdate(messageId, {
+            $pull: { emoji: { emoji, sender: emojiSender } },
+          });
+          updatedMessage = await Message.findById(messageId).populate(
+            "emoji.sender",
+            "username profilePhoto"
+          );
+        } else if (emoji && emojiSender) {
           await Message.findByIdAndUpdate(messageId, {
             $pull: { emoji: { sender: emojiSender } },
           });
@@ -49,7 +57,7 @@ io.on("connection", (socket) => {
             { new: true }
           );
         }
-
+  
         if (updatedMessage) {
           io.emit("messageUpdated", updatedMessage);
         }
