@@ -1,7 +1,7 @@
 import React from "react";
 import SendInput from "./SendInput";
 import ManyMessage from "./ManyMessage";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import useGetOtherUsers from "../../../../hooks/useGetOtherUsers";
 import axiosInterceptors from "../../axiosInterceptors";
 import toast from "react-hot-toast";
@@ -9,6 +9,7 @@ import CommanGroupModal from "../../../../comman/CommanGroupModal";
 import DialogWrapper from "../../../../comman/DialogWrapper";
 import useGetRealTimeEvents from "../../../../hooks/useGetRealTimeEvents";
 import useGetGroups from "../../../../hooks/usegetGroups";
+import { removeOtherUser, setSelectedUser } from "../../../../redux/userSlice";
 
 function Message() {
   useGetRealTimeEvents();
@@ -25,11 +26,16 @@ function Message() {
   function viewProfile() {
     if (!otherUsers) return;
   }
+  const dispatch = useDispatch();
   const handleBlockUser = async (userId) => {
     try {
       const res = await axiosInterceptors.put("/user/block", { userId });
       if (res.status === 200) {
-        console.log("User blocked successfully");
+        const modal = document.getElementById("view_profile");
+        if (modal) modal.close();
+        dispatch(setSelectedUser(null));
+        dispatch(removeOtherUser(userId));
+        toast.success("User blocked successfully");
       }
     } catch (error) {
       console.error(
