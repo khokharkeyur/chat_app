@@ -41,6 +41,11 @@ const userSlice = createSlice({
         state.selectedUser = null;
       }
     },
+    removeOtherUser: (state, action) => {
+      state.otherUsers = state.otherUsers.filter(
+        (user) => user._id !== action.payload
+      );
+    },
   },
 });
 
@@ -52,5 +57,6 @@ export const {
   setGroups,
   updateSelectedUser,
   removeGroup,
+  removeOtherUser
 } = userSlice.actions;
 export default userSlice.reducer;

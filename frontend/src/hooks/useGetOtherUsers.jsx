@@ -12,7 +12,7 @@ function useGetOtherUsers() {
       try {
         const res = await axiosInterceptors.get(`/user`);
         dispatch(setOtherUsers(res.data));
-        setData(res.data); // 👉 Save in local state
+        setData(res.data);
       } catch (error) {
         console.log(error);
       }
@@ -20,7 +20,7 @@ function useGetOtherUsers() {
     fetchOtherUser();
   }, []);
 
-  return { data }; // 👉 return the data
+  return { data };
 }
 
 export default useGetOtherUsers;
