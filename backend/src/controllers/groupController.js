@@ -198,7 +198,6 @@ export const addMembersToGroup = async (req, res) => {
 
 export const getAllGroups = async (req, res) => {
   try {
-    console.log('req', req.id)
     const userId = req.id
     const groups = await Group.find({members: userId}).populate({
       path: "members",

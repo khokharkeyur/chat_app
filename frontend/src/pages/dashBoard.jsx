@@ -82,7 +82,6 @@ function Dashboard() {
       const response = await axiosInterceptors.put("/user/unBlock", { userId });
 
       if (response.status === 200) {
-        console.log(response.data.message);
         setBlockedUsers((prev) => prev.filter((user) => user._id !== userId));
       }
     } catch (error) {

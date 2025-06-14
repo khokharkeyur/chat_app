@@ -57,8 +57,6 @@ const CommanGroupModal = ({
       .map((m) => m._id)
       .filter((id) => !existingIds.includes(id));
 
-    console.log("newMemberIds", newMemberIds);
-
     if (!selectedUser?._id || newMemberIds.length === 0) {
       toast.error("No new members selected.");
       return;
