@@ -92,8 +92,6 @@ export const getMessage = async (req, res) => {
   try {
     const receiverId = req.params.id;
     const senderId = req.id;
-    console.log("receiverId", receiverId);
-    console.log("senderId", senderId);
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
       isGroup: false,
@@ -104,7 +102,6 @@ export const getMessage = async (req, res) => {
         select: "username profilePhoto",
       },
     });
-    console.log(conversation, "conversation");
 
     return res.status(200).json(conversation?.messages);
   } catch (error) {

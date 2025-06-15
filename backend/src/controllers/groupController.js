@@ -198,7 +198,8 @@ export const addMembersToGroup = async (req, res) => {
 
 export const getAllGroups = async (req, res) => {
   try {
-    const groups = await Group.find().populate({
+    const userId = req.id
+    const groups = await Group.find({members: userId}).populate({
       path: "members",
       select: "-password -blockedUsers -__v",
     });

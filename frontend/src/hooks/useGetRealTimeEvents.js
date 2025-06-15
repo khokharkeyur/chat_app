@@ -64,8 +64,6 @@ const useGetRealTimeEvents = () => {
       });
 
       socket.on("groupUpdated", ({ groupId, updatedGroup }) => {
-        console.log("groups", groups);
-        console.log("updatedGroup", updatedGroup);
         const updatedGroups = groups?.map((group) =>
           group._id === groupId
             ? {
