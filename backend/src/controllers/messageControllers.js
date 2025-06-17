@@ -2,6 +2,10 @@ import { Conversation } from "../models/conversationModel.js";
 import { Message } from "../models/messageModel.js";
 import { Group } from "../models/groupModel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
+import {
+  getLastMessageBetweenUsers,
+  getLastMessageForGroup,
+} from "../utils/lastMessage.js";
 
 export const sendMessage = async (req, res) => {
   try {
@@ -16,10 +20,6 @@ export const sendMessage = async (req, res) => {
     let newMessage;
 
     if (group && type === "group") {
-      const membersToSend = group.members.filter(
-        (member) => member.toString() !== senderId
-      );
-
       newMessage = await Message.create({
         senderId,
         receiverId,
@@ -40,14 +40,20 @@ export const sendMessage = async (req, res) => {
 
       gotConversation.messages.push(newMessage._id);
       await Promise.all([gotConversation.save(), newMessage.save()]);
-
-      membersToSend.forEach((memberId) => {
+      const lastMessage = await getLastMessageForGroup(receiverId);
+      const allMembers = group.members;
+      allMembers.forEach((memberId) => {
         const receiverSocketId = getReceiverSocketId(memberId.toString());
         if (receiverSocketId) {
           io.to(receiverSocketId).emit("newMessage", {
             ...newMessage.toObject(),
             type: "group",
             groupId: group._id,
+          });
+          io.to(receiverSocketId).emit("lastMessageUpdated", {
+            groupId: group._id,
+            lastMessage,
+            type: "group",
           });
         }
       });
@@ -73,6 +79,19 @@ export const sendMessage = async (req, res) => {
       gotConversation.messages.push(newMessage._id);
       await Promise.all([gotConversation.save(), newMessage.save()]);
 
+      const lastMessage = await getLastMessageBetweenUsers(
+        senderId,
+        receiverId
+      );
+      [senderId, receiverId].forEach((uid) => {
+        const socketId = getReceiverSocketId(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit("lastMessageUpdated", {
+            userId: uid === senderId ? receiverId : senderId,
+            lastMessage,
+          });
+        }
+      });
       const receiverSocketId = getReceiverSocketId(receiverId);
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("newMessage", {
@@ -160,9 +179,42 @@ export const deleteMessage = async (req, res) => {
 
     await Message.findByIdAndDelete(messageId);
 
-    const receiverSocketId = getReceiverSocketId(message.receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("deleteMessage", { messageId });
+    const conversation = await Conversation.findOne({ messages: messageId });
+    const isGroup = conversation?.isGroup;
+    console.log("isGroup", isGroup);
+    if (isGroup) {
+      const group = await Group.findById(message.receiverId);
+      if (group) {
+        const lastMessage = await getLastMessageForGroup(message.receiverId);
+        group.members.forEach((memberId) => {
+          const socketId = getReceiverSocketId(memberId.toString());
+          if (socketId) {
+            io.to(socketId).emit("deleteMessage", { messageId });
+            io.to(socketId).emit("lastMessageUpdated", {
+              groupId: message.receiverId,
+              lastMessage,
+              type: "group",
+            });
+          }
+        });
+      }
+    } else {
+      const { senderId, receiverId } = message;
+      const lastMessage = await getLastMessageBetweenUsers(
+        senderId,
+        receiverId
+      );
+      [senderId, receiverId].forEach((uid) => {
+        const socketId = getReceiverSocketId(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit("deleteMessage", { messageId });
+          io.to(socketId).emit("lastMessageUpdated", {
+            userId: uid === senderId ? receiverId : senderId,
+            lastMessage,
+            type: "user",
+          });
+        }
+      });
     }
 
     return res.status(200).json({ message: "Message deleted successfully" });
@@ -171,14 +223,19 @@ export const deleteMessage = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
 export const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    const { message: newMessageContent, emoji, emojiSender,removeEmoji } = req.body;
+    const {
+      message: newMessageContent,
+      emoji,
+      emojiSender,
+      removeEmoji,
+    } = req.body;
     let updatedMessage;
 
     if (removeEmoji && emoji && emojiSender) {
-      // Remove the specific emoji from this sender
       await Message.findByIdAndUpdate(messageId, {
         $pull: { emoji: { emoji, sender: emojiSender } },
       });
@@ -187,7 +244,6 @@ export const editMessage = async (req, res) => {
         "username profilePhoto"
       );
     } else if (emoji && emojiSender) {
-      // Remove any existing emoji from this sender, then add the new one
       await Message.findByIdAndUpdate(messageId, {
         $pull: { emoji: { sender: emojiSender } },
       });
@@ -206,11 +262,55 @@ export const editMessage = async (req, res) => {
       );
     }
 
+    if (updatedMessage) {
+      const conversation = await Conversation.findOne({ messages: messageId });
+      const isGroup = conversation?.isGroup;
+
+      if (isGroup) {
+        const group = await Group.findById(updatedMessage.receiverId);
+        if (group) {
+          const lastMessage = await getLastMessageForGroup(
+            updatedMessage.receiverId
+          );
+          group.members.forEach((memberId) => {
+            const socketId = getReceiverSocketId(memberId.toString());
+            if (socketId) {
+              io.to(socketId).emit("messageUpdated", updatedMessage);
+              if (newMessageContent?.trim()) {
+                io.to(socketId).emit("lastMessageUpdated", {
+                  groupId: updatedMessage.receiverId,
+                  lastMessage,
+                  type: "group",
+                });
+              }
+            }
+          });
+        }
+      } else {
+        const { senderId, receiverId } = updatedMessage;
+        const lastMessage = await getLastMessageBetweenUsers(
+          senderId,
+          receiverId
+        );
+        [senderId, receiverId].forEach((uid) => {
+          const socketId = getReceiverSocketId(uid.toString());
+          if (socketId) {
+            io.to(socketId).emit("messageUpdated", updatedMessage);
+            if (newMessageContent?.trim()) {
+              io.to(socketId).emit("lastMessageUpdated", {
+                userId: uid === senderId ? receiverId : senderId,
+                lastMessage,
+                type: "user",
+              });
+            }
+          }
+        });
+      }
+    }
+
     if (!updatedMessage) {
       return res.status(404).json({ error: "Message not found" });
     }
-
-    io.emit("messageUpdated", updatedMessage);
 
     return res.status(200).json({ updatedMessage });
   } catch (error) {

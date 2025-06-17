@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import firebase from "../config/firebase.config.js";
 import { SMTPClient } from "emailjs";
+import { Message } from "../models/messageModel.js";
+import { getLastMessageBetweenUsers } from "../utils/lastMessage.js";
 
 const OTP_STORAGE = {};
 
@@ -258,7 +260,22 @@ export const getOtherUsers = async (req, res) => {
       _id: { $ne: loggedInUserId, $nin: blockedUsers },
     }).select("-password");
 
-    return res.status(200).json(otherUsers);
+    const usersWithLastMessage = await Promise.all(
+      otherUsers.map(async (user) => {
+        const lastMessage = await getLastMessageBetweenUsers(
+          loggedInUserId,
+          user._id
+        );
+        return {
+          ...user.toObject(),
+          lastMessage: lastMessage
+            ? { message: lastMessage.message, createdAt: lastMessage.createdAt }
+            : null,
+        };
+      })
+    );
+
+    return res.status(200).json(usersWithLastMessage);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
