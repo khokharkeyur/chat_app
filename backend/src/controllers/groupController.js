@@ -1,5 +1,7 @@
 import { Group } from "../models/groupModel.js";
+import { Message } from "../models/messageModel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
+import { getLastMessageForGroup } from "../utils/lastMessage.js";
 
 export const createGroup = async (req, res) => {
   try {
@@ -198,14 +200,25 @@ export const addMembersToGroup = async (req, res) => {
 
 export const getAllGroups = async (req, res) => {
   try {
-    const userId = req.id
-    const groups = await Group.find({members: userId}).populate({
+    const userId = req.id;
+    const groups = await Group.find({ members: userId }).populate({
       path: "members",
       select: "-password -blockedUsers -__v",
     });
+    const groupsWithLastMessage = await Promise.all(
+      groups.map(async (group) => {
+        const lastMessage = await getLastMessageForGroup(group._id);
+        return {
+          ...group.toObject(),
+          lastMessage: lastMessage
+            ? { message: lastMessage.message, createdAt: lastMessage.createdAt }
+            : null,
+        };
+      })
+    );
     return res.status(200).json({
       message: "Groups retrieved successfully",
-      groups,
+      groups: groupsWithLastMessage,
     });
   } catch (error) {
     console.log(error);
