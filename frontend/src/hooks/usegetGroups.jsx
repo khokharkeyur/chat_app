@@ -11,6 +11,7 @@ function useGetGroups() {
     const fetchGroups = async () => {
       try {
         const res = await axiosInterceptors.get("/group/");
+        console.log("res?.data", res?.data);
         dispatch(setGroups(res?.data?.groups));
         setData(res.data?.groups);
       } catch (error) {

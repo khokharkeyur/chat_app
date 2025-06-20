@@ -30,7 +30,7 @@ function SendInput() {
     if (!message.trim()) return;
     try {
       let res;
-      const type = selectedUser?.members ? "group" : "user";
+      const type = isGroup ? "group" : "user";
       if (editMessage) {
         socket.emit("editMessage", editMessage._id, message);
 
