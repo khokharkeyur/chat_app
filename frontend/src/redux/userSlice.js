@@ -33,6 +33,18 @@ const userSlice = createSlice({
     setOnlineUsers: (state, action) => {
       state.onlineUsers = action.payload;
     },
+    updateUserLastMessage: (state, action) => {
+      const { userId, lastMessage } = action.payload;
+      state.otherUsers = state.otherUsers.map((user) =>
+        user._id === userId ? { ...user, lastMessage } : user
+      );
+    },
+    updateGroupLastMessage: (state, action) => {
+      const { groupId, lastMessage } = action.payload;
+      state.groups = state.groups.map((group) =>
+        group._id === groupId ? { ...group, lastMessage } : group
+      );
+    },
     removeGroup: (state, action) => {
       state.groups = state.groups?.filter(
         (group) => group._id !== action.payload
@@ -57,6 +69,8 @@ export const {
   setGroups,
   updateSelectedUser,
   removeGroup,
-  removeOtherUser
+  removeOtherUser,
+  updateUserLastMessage,
+  updateGroupLastMessage
 } = userSlice.actions;
 export default userSlice.reducer;
