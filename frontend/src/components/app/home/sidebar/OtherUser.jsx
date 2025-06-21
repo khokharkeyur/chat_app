@@ -28,6 +28,9 @@ function OtherUser({ user }) {
           <div className="flex gap-2 flex-1">
             <p>{user?.fullName || user?.name}</p>
           </div>
+          <div className="flex gap-2 flex-1 text-[12px]">
+            <p>{user?.lastMessage?.message}</p>
+          </div>
         </div>
       </div>
       <div className="divider my-0 py-0 h-1"></div>

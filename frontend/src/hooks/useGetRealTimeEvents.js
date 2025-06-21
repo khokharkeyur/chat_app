@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setMessages } from "../redux/messageSlice";
-import { setGroups, removeGroup, updateSelectedUser } from "../redux/userSlice";
+import { setGroups, removeGroup, updateSelectedUser, updateUserLastMessage, updateGroupLastMessage } from "../redux/userSlice";
 
 const useGetRealTimeEvents = () => {
   const { socket } = useSelector((store) => store.socket);
@@ -46,6 +46,14 @@ const useGetRealTimeEvents = () => {
         dispatch(setGroups([...(groups || []), newGroup]));
       });
 
+      socket.on("lastMessageUpdated", (payload) => {
+        console.log('payload.type', payload)
+        if (payload.type === "group") {
+          dispatch(updateGroupLastMessage({ groupId: payload.groupId, lastMessage: payload.lastMessage }));
+        } else if (payload.userId) {
+          dispatch(updateUserLastMessage({ userId: payload.userId, lastMessage: payload.lastMessage }));
+        }
+      });
       socket.on("groupDeleted", ({ groupId }) => {
         dispatch(removeGroup(groupId));
       });
@@ -112,6 +120,7 @@ const useGetRealTimeEvents = () => {
       socket?.off("memberRemoved");
       socket?.off("memberAdded");
       socket?.off("groupUpdated");
+      socket?.off("lastMessageUpdated");
     };
   }, [socket, messages, groups, dispatch]);
 
