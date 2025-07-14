@@ -181,7 +181,6 @@ export const deleteMessage = async (req, res) => {
 
     const conversation = await Conversation.findOne({ messages: messageId });
     const isGroup = conversation?.isGroup;
-    console.log("isGroup", isGroup);
     if (isGroup) {
       const group = await Group.findById(message.receiverId);
       if (group) {

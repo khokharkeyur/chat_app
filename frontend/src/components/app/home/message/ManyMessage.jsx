@@ -12,7 +12,6 @@ function ManyMessage() {
 
   const handleDeleteMessage = async (messageId) => {
     try {
-      socket.emit("deleteMessage", messageId);
       await axiosInterceptors.delete(`/message/delete/${messageId}`);
     } catch (error) {
       console.error("Error deleting message:", error);

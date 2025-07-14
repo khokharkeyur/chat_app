@@ -1,7 +1,13 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setMessages } from "../redux/messageSlice";
-import { setGroups, removeGroup, updateSelectedUser, updateUserLastMessage, updateGroupLastMessage } from "../redux/userSlice";
+import {
+  setGroups,
+  removeGroup,
+  updateSelectedUser,
+  updateUserLastMessage,
+  updateGroupLastMessage,
+} from "../redux/userSlice";
 
 const useGetRealTimeEvents = () => {
   const { socket } = useSelector((store) => store.socket);
@@ -35,6 +41,10 @@ const useGetRealTimeEvents = () => {
         dispatch(setMessages(updatedMessages));
       });
 
+      socket.on("deleteMessage", ({ messageId }) => {
+        dispatch(setMessages(messages.filter((msg) => msg._id !== messageId)));
+      });
+
       socket.on("messageDeleted", (deletedMessage) => {
         const updatedMessages = messages.filter(
           (msg) => msg._id !== deletedMessage._id
@@ -47,11 +57,21 @@ const useGetRealTimeEvents = () => {
       });
 
       socket.on("lastMessageUpdated", (payload) => {
-        console.log('payload.type', payload)
+        console.log("payload.type", payload);
         if (payload.type === "group") {
-          dispatch(updateGroupLastMessage({ groupId: payload.groupId, lastMessage: payload.lastMessage }));
+          dispatch(
+            updateGroupLastMessage({
+              groupId: payload.groupId,
+              lastMessage: payload.lastMessage,
+            })
+          );
         } else if (payload.userId) {
-          dispatch(updateUserLastMessage({ userId: payload.userId, lastMessage: payload.lastMessage }));
+          dispatch(
+            updateUserLastMessage({
+              userId: payload.userId,
+              lastMessage: payload.lastMessage,
+            })
+          );
         }
       });
       socket.on("groupDeleted", ({ groupId }) => {
@@ -114,6 +134,7 @@ const useGetRealTimeEvents = () => {
     return () => {
       socket?.off("newMessage");
       socket?.off("messageUpdated");
+      socket?.off("deleteMessage");
       socket?.off("messageDeleted");
       socket?.off("groupCreated");
       socket?.off("groupDeleted");
