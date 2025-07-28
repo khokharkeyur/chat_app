@@ -84,7 +84,7 @@ function Message() {
           <div className="flex gap-2 items-center bg-zinc-700 text-white px-4 py-2 mb-2 w-full">
             <div>
               <button
-                className="w-full grid grid-cols-2 items-center cursor-pointer gap-1"
+                className="w-full flex items-center cursor-pointer gap-2"
                 onClick={() => {
                   if (
                     !selectedUser.members ||
@@ -95,7 +95,7 @@ function Message() {
                   }
                 }}
               >
-                <div className="">
+                <div>
                   <img
                     src={selectedUser?.profilePhoto}
                     alt=""
