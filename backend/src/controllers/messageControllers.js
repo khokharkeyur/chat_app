@@ -12,6 +12,7 @@ export const sendMessage = async (req, res) => {
     const senderId = req.id;
     const receiverId = req.params.id;
     const { message, type } = req.body;
+
     if (!message || message.trim() === "") {
       return res.status(400).json({ error: "Message is required" });
     }
@@ -39,9 +40,12 @@ export const sendMessage = async (req, res) => {
       }
 
       gotConversation.messages.push(newMessage._id);
+
       await Promise.all([gotConversation.save(), newMessage.save()]);
+
       const lastMessage = await getLastMessageForGroup(receiverId);
       const allMembers = group.members;
+
       allMembers.forEach((memberId) => {
         const receiverSocketId = getReceiverSocketId(memberId.toString());
         if (receiverSocketId) {
@@ -50,6 +54,7 @@ export const sendMessage = async (req, res) => {
             type: "group",
             groupId: group._id,
           });
+
           io.to(receiverSocketId).emit("lastMessageUpdated", {
             groupId: group._id,
             lastMessage,
@@ -92,6 +97,7 @@ export const sendMessage = async (req, res) => {
           });
         }
       });
+
       const receiverSocketId = getReceiverSocketId(receiverId);
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("newMessage", {
@@ -107,6 +113,7 @@ export const sendMessage = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
 export const getMessage = async (req, res) => {
   try {
     const receiverId = req.params.id;
@@ -163,6 +170,7 @@ export const getGroupMessage = async (req, res) => {
     res.status(500).json({ error: "Failed to get group messages" });
   }
 };
+
 export const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
@@ -181,10 +189,13 @@ export const deleteMessage = async (req, res) => {
 
     const conversation = await Conversation.findOne({ messages: messageId });
     const isGroup = conversation?.isGroup;
+
     if (isGroup) {
       const group = await Group.findById(message.receiverId);
+
       if (group) {
         const lastMessage = await getLastMessageForGroup(message.receiverId);
+
         group.members.forEach((memberId) => {
           const socketId = getReceiverSocketId(memberId.toString());
           if (socketId) {
@@ -199,10 +210,12 @@ export const deleteMessage = async (req, res) => {
       }
     } else {
       const { senderId, receiverId } = message;
+
       const lastMessage = await getLastMessageBetweenUsers(
         senderId,
         receiverId
       );
+
       [senderId, receiverId].forEach((uid) => {
         const socketId = getReceiverSocketId(uid.toString());
         if (socketId) {
@@ -238,6 +251,7 @@ export const editMessage = async (req, res) => {
       await Message.findByIdAndUpdate(messageId, {
         $pull: { emoji: { emoji, sender: emojiSender } },
       });
+
       updatedMessage = await Message.findById(messageId).populate(
         "emoji.sender",
         "username profilePhoto"
@@ -246,9 +260,11 @@ export const editMessage = async (req, res) => {
       await Message.findByIdAndUpdate(messageId, {
         $pull: { emoji: { sender: emojiSender } },
       });
+
       await Message.findByIdAndUpdate(messageId, {
         $push: { emoji: { emoji, sender: emojiSender } },
       });
+
       updatedMessage = await Message.findById(messageId).populate(
         "emoji.sender",
         "username profilePhoto"
@@ -287,10 +303,12 @@ export const editMessage = async (req, res) => {
         }
       } else {
         const { senderId, receiverId } = updatedMessage;
+
         const lastMessage = await getLastMessageBetweenUsers(
           senderId,
           receiverId
         );
+
         [senderId, receiverId].forEach((uid) => {
           const socketId = getReceiverSocketId(uid.toString());
           if (socketId) {
