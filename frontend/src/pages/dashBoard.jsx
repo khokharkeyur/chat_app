@@ -5,7 +5,8 @@ import { Avatar, Divider, IconButton, Menu, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axiosInterceptors from "../components/app/axiosInterceptors";
-import DialogWrapper from "../comman/DialogWrapper";
+import AdminDetailsDialog from "../components/app/home/Dialog/AdminDetailsDialog";
+import BlockedUserDialog from "../components/app/home/Dialog/BlockedUserDialog";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -24,27 +25,17 @@ function Dashboard() {
     setAnchorEl(null);
   };
 
-  const openDialog = () => {
-    const modal = document.getElementById("adminDetailsDialog");
+  const openDialog = (id) => {
+    const modal = document.getElementById(id);
     if (modal) modal.showModal();
     handleClose();
   };
 
-  const closeDialog = () => {
-    const modal = document.getElementById("adminDetailsDialog");
+  const closeDialog = (id) => {
+    const modal = document.getElementById(id);
     if (modal) modal.close();
   };
 
-  const openBlockedUserDialog = () => {
-    const modal = document.getElementById("blockedUsersDialog");
-    if (modal) modal.showModal();
-    handleClose();
-  };
-
-  const closeBlockedUserDialog = () => {
-    const modal = document.getElementById("blockedUsersDialog");
-    if (modal) modal.close();
-  };
   useEffect(() => {
     const fetchAdminDetails = async () => {
       if (!authUser?._id) return;
@@ -148,7 +139,7 @@ function Dashboard() {
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
-          <MenuItem onClick={openDialog}>
+          <MenuItem onClick={() => openDialog("adminDetailsDialog")}>
             <Avatar /> Profile
           </MenuItem>
           <MenuItem onClick={handleEditProfile}>
@@ -157,72 +148,22 @@ function Dashboard() {
           <MenuItem onClick={() => navigate("/forgetPassword")}>
             <Avatar /> Change Password
           </MenuItem>
-          <MenuItem onClick={openBlockedUserDialog}>
+          <MenuItem onClick={() => openDialog("blockedUsersDialog")}>
             <Avatar /> Blocked User
           </MenuItem>
           <Divider />
         </Menu>
       </div>
 
-      <DialogWrapper id="adminDetailsDialog" onClose={closeDialog}>
-        <div>
-          {adminDetails && (
-            <div className="flex flex-col justify-center items-center">
-              <img
-                src={adminDetails.profilePhoto}
-                alt=""
-                className="w-20 h-20 rounded-full"
-              />
-              <p>{adminDetails.fullName}</p>
-              <div className="flex gap-3 mt-3">
-                <p className="font-semibold text-xl">Username:</p>
-                <p className="text-xl">{adminDetails.username}</p>
-              </div>
-              <div className="flex gap-3 mt-3">
-                <p className="font-semibold text-xl">Gender:</p>
-                <p className="text-xl">{adminDetails.gender}</p>
-              </div>
-            </div>
-          )}
-          <div className="modal-action">
-            <button className="btn flex justify-end" onClick={closeDialog}>
-              Close
-            </button>
-          </div>
-        </div>
-      </DialogWrapper>
-
-      <DialogWrapper id="blockedUsersDialog" onClose={closeBlockedUserDialog}>
-        <h3 className="font-bold text-lg">Blocked Users</h3>
-        {blockedUsers.length > 0 ? (
-          blockedUsers.map((user) => (
-            <div
-              key={user._id}
-              className=" rounded-full flex justify-between mx-3 my-3"
-            >
-              <div className="flex">
-                <img
-                  src={user.profilePhoto}
-                  alt={user.fullName}
-                  className="mr-4 w-12"
-                />
-                <p className="pt-2 pb-4">{user.fullName}</p>
-              </div>
-              <button className="btn" onClick={() => handleUnBlock(user._id)}>
-                Unblock
-              </button>
-            </div>
-          ))
-        ) : (
-          <p>No blocked users found.</p>
-        )}
-        <div className="modal-action w-full">
-          <button className="btn flex w-full" onClick={closeBlockedUserDialog}>
-            Close
-          </button>
-        </div>
-      </DialogWrapper>
-
+      <AdminDetailsDialog
+        adminDetails={adminDetails}
+        onClose={() => closeDialog("adminDetailsDialog")}
+      />
+      <BlockedUserDialog
+        blockedUsers={blockedUsers}
+        onClose={() => closeDialog("blockedUsersDialog")}
+        handleUnBlock={handleUnBlock}
+      />
       <HomePage />
     </div>
   );
