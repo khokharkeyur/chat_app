@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
-import { setSocket } from "./redux/socketSlice";
-import { setOnlineUsers } from "./redux/userSlice";
+import { setSocket } from "../redux/socketSlice";
+import { setOnlineUsers } from "../redux/userSlice";
 
 export default function MainLayout() {
   const location = useLocation();
