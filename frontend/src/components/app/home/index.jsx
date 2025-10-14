@@ -1,8 +1,12 @@
 import React from "react";
 import Sidebar from "./sidebar/Sidebar";
 import Message from "./message";
+import { useWindowSize } from "../../../config/WindowSizeContext";
 
-function index() {
+const Index = () => {
+  const { width } = useWindowSize();
+  console.log("width", width);
+
   return (
     <div>
       <div className="flex sm:h-[450px] md:h-[550px] rounded-lg overflow-hidden bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-0">
@@ -11,6 +15,6 @@ function index() {
       </div>
     </div>
   );
-}
+};
 
-export default index;
+export default Index;

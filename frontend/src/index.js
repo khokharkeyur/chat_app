@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import store from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
+import { WindowSizeProvider } from "./config/WindowSizeContext";
 
 let persistor = persistStore(store);
 
@@ -15,7 +16,9 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <App />
+        <WindowSizeProvider>
+          <App />
+        </WindowSizeProvider>
         <Toaster
           toastOptions={{
             position: "top-right",
