@@ -82,16 +82,16 @@ function Sidebar() {
   };
 
   return (
-    <div className="border-r border-slate-500 p-4 flex flex-col">
+    <div className="border-r border-slate-500 p-4 flex flex-col max-h-[80%] w-[40%]">
       <form
         onSubmit={searchSubmitHandler}
         action=""
-        className="flex items-center gap-2"
+        className="flex items-center gap-3 w-full"
       >
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input input-bordered rounded-md"
+          className="input input-bordered rounded-md w-[80%]"
           type="text"
           placeholder="Search..."
         />
