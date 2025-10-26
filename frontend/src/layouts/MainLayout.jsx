@@ -34,7 +34,7 @@ export default function MainLayout() {
 
   return (
     <div
-      className={`p-4 flex items-center justify-center ${location.pathname === "/signup" ? "" : "h-screen"}`}
+      className={`p-4 flex justify-center ${location.pathname === "/signup" ? "" : "h-screen"}`}
     >
       <Outlet />
     </div>

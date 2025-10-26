@@ -80,7 +80,7 @@ function Message() {
   return (
     <>
       {selectedUser !== null ? (
-        <div className="md:min-w-[550px] flex flex-col">
+        <div className=" max-h-[80%] flex flex-col w-full">
           <div className="flex gap-2 items-center bg-zinc-700 text-white px-4 py-2 mb-2 w-full">
             <div>
               <button
@@ -177,7 +177,7 @@ function Message() {
           <SendInput />
         </div>
       ) : (
-        <div className="md:min-w-[550px] flex flex-col justify-center items-center">
+        <div className="max-h-[80%] flex flex-col justify-center items-center w-full">
           <h1 className="text-4xl  font-bold">Hi,{authUser?.fullName} </h1>
           <h1 className="text-2xl ">Let's start conversation</h1>
         </div>

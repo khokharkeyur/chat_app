@@ -84,8 +84,8 @@ function Dashboard() {
   };
 
   return (
-    <div>
-      <div className="w-full flex justify-end">
+    <div className="w-[80%]">
+      <div className=" flex justify-end">
         <Tooltip title="Account settings">
           <IconButton
             onClick={handleClick}
