@@ -1,6 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedUser } from "../../../../redux/userSlice";
+import { getLastMessage } from "../../../../comman/helper";
 
 function OtherUser({ user }) {
   const dispatch = useDispatch();
@@ -29,7 +30,7 @@ function OtherUser({ user }) {
             <p>{user?.fullName || user?.name}</p>
           </div>
           <div className="flex gap-2 flex-1 text-[12px]">
-            <p>{user?.lastMessage?.message}</p>
+            <p>{getLastMessage(user?.lastMessage?.message)}</p>
           </div>
         </div>
       </div>
