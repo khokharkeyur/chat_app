@@ -65,13 +65,15 @@ function SendInput() {
     <div>
       <form onSubmit={onSubmitHandler} className="px-4 my-3">
         <div className="w-full relative">
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            type="text"
-            placeholder="Send a message..."
-            className="border text-sm rounded-lg block w-full p-3 border-zinc-500 bg-gray-600 text-white"
-          />
+          <div className="border text-sm rounded-lg block w-full p-3 border-zinc-500 bg-gray-600 text-white">
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              type="text"
+              placeholder="Send a message..."
+              className="lg:w-[95%] w-[90%] border-none bg-transparent focus:outline-none focus:border-none"
+            />
+          </div>
           <button
             type="submit"
             className="absolute flex inset-y-0 end-0 items-center pr-4"
