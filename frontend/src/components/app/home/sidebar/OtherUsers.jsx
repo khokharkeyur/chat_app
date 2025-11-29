@@ -8,6 +8,7 @@ function OtherUsers() {
   useGetOtherUsers();
   useGetGroups();
   const { groups, otherUsers } = useSelector((store) => store.user);
+  console.log("groups on otherUser", groups);
 
   return (
     <div className="overflow-auto flex-1 sm:block">

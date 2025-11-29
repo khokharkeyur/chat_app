@@ -78,17 +78,21 @@ const useGetRealTimeEvents = () => {
         dispatch(removeGroup(groupId));
       });
 
-      socket.on("memberAdded", ({ groupId, memberId, updatedGroup }) => {
-        dispatch(
-          setGroups((prev) => {
-            const exists = prev?.some((g) => g._id === groupId);
-            if (exists) {
-              return prev.map((g) => (g._id === groupId ? updatedGroup : g));
-            } else {
-              return [...(prev || []), updatedGroup];
-            }
-          })
-        );
+      socket.on("memberAdded", ({ memberId, updatedGroup }) => {
+        const oldGroups = groups || [];
+
+        const index = oldGroups.findIndex((g) => g._id === updatedGroup._id);
+
+        let newGroups;
+
+        if (index !== -1) {
+          newGroups = [...oldGroups];
+          newGroups[index] = updatedGroup;
+        } else {
+          newGroups = [...oldGroups, updatedGroup];
+        }
+
+        dispatch(setGroups(newGroups));
       });
 
       socket.on("groupUpdated", ({ groupId, updatedGroup }) => {
