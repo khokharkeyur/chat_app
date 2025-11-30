@@ -116,16 +116,17 @@ export const removeMemberFromGroup = async (req, res) => {
         updatedGroup: populatedGroup,
       });
     }
-    group.members.forEach((remainingMemberId) => {
-      const memberSocketId = getReceiverSocketId(remainingMemberId.toString());
+
+    group.members.forEach((memberId) => {
+      const memberSocketId = getReceiverSocketId(memberId.toString());
       if (memberSocketId) {
-        io.to(memberSocketId).emit("memberRemoved", {
+        io.to(memberSocketId).emit("groupUpdated", {
           groupId,
-          memberId,
           updatedGroup: populatedGroup,
         });
       }
     });
+
     return res.status(200).json({
       message: "Member removed successfully",
       group,

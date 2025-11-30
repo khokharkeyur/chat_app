@@ -7,6 +7,7 @@ import {
   updateSelectedUser,
   updateUserLastMessage,
   updateGroupLastMessage,
+  setSelectedUser,
 } from "../redux/userSlice";
 
 const useGetRealTimeEvents = () => {
@@ -111,26 +112,24 @@ const useGetRealTimeEvents = () => {
       });
 
       socket.on("memberRemoved", ({ groupId, memberId }) => {
-        const updatedGroups = groups?.map((group) =>
-          group._id === groupId
-            ? {
-                ...group,
-                members: group.members.filter(
-                  (member) => member._id !== memberId
-                ),
-              }
-            : group
-        );
-        dispatch(setGroups(updatedGroups));
+        const oldGroups = groups || [];
+        const newGroups = oldGroups.filter((g) => g._id !== groupId);
+        dispatch(setGroups(newGroups));
+
+        // const updatedGroups = groups?.map((group) =>
+        //   group._id === groupId
+        //     ? {
+        //         ...group,
+        //         members: group.members.filter(
+        //           (member) => member._id !== memberId
+        //         ),
+        //       }
+        //     : group
+        // );
+        // console.log("updatedGroups after member removal", updatedGroups);
+        // dispatch(setGroups(updatedGroups));
         if (selectedUser?._id === groupId) {
-          dispatch(
-            updateSelectedUser({
-              ...selectedUser,
-              members: selectedUser.members.filter(
-                (member) => member._id !== memberId
-              ),
-            })
-          );
+          dispatch(setSelectedUser(null));
         }
       });
     }
