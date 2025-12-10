@@ -9,9 +9,10 @@ import {
   updateGroupLastMessage,
   setSelectedUser,
 } from "../redux/userSlice";
+import { useSocket } from "../config/SocketContext";
 
 const useGetRealTimeEvents = () => {
-  const { socket } = useSelector((store) => store.socket);
+  const socket = useSocket();
   const { messages } = useSelector((store) => store.message);
   const { groups, selectedUser } = useSelector((store) => store.user);
   const dispatch = useDispatch();

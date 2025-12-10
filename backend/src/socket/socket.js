@@ -19,7 +19,7 @@ export const getReceiverSocketId = (receiverId) => {
 const userSocketMap = {};
 
 io.on("connection", (socket) => {
-  const userId = socket.handshake.query.userId;
+  const userId = socket.handshake.auth.userId;
   if (userId !== undefined) {
     userSocketMap[userId] = socket.id;
   }
@@ -28,7 +28,7 @@ io.on("connection", (socket) => {
 
   socket.on(
     "editMessage",
-    async (messageId, newContent, emoji, emojiSender,removeEmoji) => {
+    async (messageId, newContent, emoji, emojiSender, removeEmoji) => {
       try {
         let updatedMessage;
         if (removeEmoji && emoji && emojiSender) {
@@ -57,7 +57,7 @@ io.on("connection", (socket) => {
             { new: true }
           );
         }
-  
+
         if (updatedMessage) {
           io.emit("messageUpdated", updatedMessage);
         }
