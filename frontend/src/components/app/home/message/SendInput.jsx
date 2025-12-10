@@ -3,13 +3,14 @@ import { IoSend } from "react-icons/io5";
 import axiosInterceptors from "../../axiosInterceptors";
 import { useDispatch, useSelector } from "react-redux";
 import { setEditMessage, setMessages } from "../../../../redux/messageSlice";
+import { useSocket } from "../../../../config/SocketContext";
 
 function SendInput() {
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
   const { authUser, selectedUser } = useSelector((store) => store.user);
   const { messages, editMessage } = useSelector((store) => store.message);
-  const { socket } = useSelector((store) => store.socket);
+  const socket = useSocket();
 
   useEffect(() => {
     if (editMessage) {

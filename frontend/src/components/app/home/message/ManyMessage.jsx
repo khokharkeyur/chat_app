@@ -4,11 +4,12 @@ import useGetMessages from "../../../../hooks/useGetMessages";
 import { useSelector, useDispatch } from "react-redux";
 import useGetRealTimeMessage from "../../../../hooks/useGetRealTimeEvents";
 import axiosInterceptors from "../../axiosInterceptors/index";
+import { useSocket } from "../../../../config/SocketContext";
 
 function ManyMessage() {
   useGetMessages();
   const { messages } = useSelector((store) => store.message);
-  const { socket } = useSelector((store) => store.socket);
+  const socket = useSocket();
 
   const handleDeleteMessage = async (messageId) => {
     try {
