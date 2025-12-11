@@ -130,7 +130,6 @@ export const updateProfile = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { userId, email, otp, newPassword, confirmPassword } = req.body;
-    console.log("req.body", req.body);
     if ((!userId && !email) || !newPassword || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -144,12 +143,16 @@ export const resetPassword = async (req, res) => {
     if (userId) {
       user = await User.findById(userId);
     } else if (email) {
-      if (!otp || OTP_STORAGE[email] !== otp) {
-        return res.status(400).json({ message: "Invalid or expired OTP" });
-      }
-      delete OTP_STORAGE[email];
-
       user = await User.findOne({ email });
+      if (!user || !user.otp) {
+        return res.status(404).json({ message: "User or OTP not found" });
+      }
+      if (user.otpExpireAt < Date.now()) {
+        return res.status(400).json({ message: "OTP expired" });
+      }
+      if (user.otp !== otp) {
+        return res.status(400).json({ message: "Invalid OTP" });
+      }
     }
 
     if (!user) {
@@ -159,6 +162,8 @@ export const resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     user.password = hashedPassword;
+    user.otp = null;
+    user.otpExpireAt = null;
 
     await user.save();
 
@@ -401,9 +406,10 @@ export const sendOtp = async (req, res) => {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    OTP_STORAGE[email] = otp;
-    setTimeout(() => delete OTP_STORAGE[email], 5 * 60 * 1000);
+    user.otp = otp;
+    user.otpExpireAt = Date.now() + 5 * 60 * 1000;
 
+    await user.save();
     const message = {
       text: `Hello ${user.fullName}, your OTP is: ${otp}`,
       from: `chatApp <${process.env.USER_EMAIL}>`,
@@ -437,9 +443,17 @@ export const verifyOtp = async (req, res) => {
         .status(400)
         .json({ message: "Phone number and OTP are required" });
     }
+    const user = await User.findOne({ email });
+    if (!user || !user.otp) {
+      return res.status(400).json({ message: "OTP not found" });
+    }
 
-    if (!OTP_STORAGE[email] || OTP_STORAGE[email] !== otp) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+    if (user.otpExpireAt < Date.now()) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
     res.status(200).json({
