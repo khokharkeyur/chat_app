@@ -31,6 +31,8 @@ const userModel = new mongoose.Schema(
     email: {
       type: String,
     },
+    otp: { type: String },
+    otpExpireAt: { type: Date }
   },
   { timestamps: true }
 );
