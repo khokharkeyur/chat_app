@@ -1,3 +1,6 @@
-export const getLastMessage = (message) => {
-  return message?.length > 20 ? `${message?.slice(0, 20)} ...` : message;
+export const getLastMessage = (message = "", width = 0) => {
+  if (!message) return "";
+
+  const limit = width > 800 ? 20 : 10;
+  return message.length > limit ? `${message.slice(0, limit)}...` : message;
 };
