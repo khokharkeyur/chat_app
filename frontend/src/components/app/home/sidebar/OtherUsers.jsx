@@ -15,11 +15,9 @@ function OtherUsers() {
       {otherUsers?.map((user) => (
         <OtherUser key={user._id} user={user} />
       ))}
-      {(groups.length == 0 && otherUsers.length === 0) && (
-          <div className="text-center text-gray-500">
-            No other users found.
-          </div>
-        )}
+      {groups?.length == 0 && otherUsers?.length === 0 && (
+        <div className="text-center text-gray-500">No other users found.</div>
+      )}
     </div>
   );
 }
