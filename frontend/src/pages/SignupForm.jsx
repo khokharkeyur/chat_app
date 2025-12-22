@@ -21,8 +21,25 @@ function SignupForm() {
     image: null,
   };
   const validationSchema = Yup.object({
-    fullName: Yup.string().required("Full Name is required"),
-    username: Yup.string().required("Username is required"),
+    fullName: Yup.string()
+      .trim()
+      .min(3, "Full Name must be at least 3 characters")
+      .max(50, "Full Name must not exceed 50 characters")
+      .matches(
+        /^[A-Za-z\s]+$/,
+        "Full Name must contain only letters and spaces"
+      )
+      .required("Full Name is required"),
+
+    username: Yup.string()
+      .trim()
+      .min(3, "Username must be at least 3 characters")
+      .max(20, "Username must not exceed 20 characters")
+      .matches(
+        /^[a-zA-Z0-9._]+$/,
+        "Username can only contain letters, numbers, dots, and underscores"
+      )
+      .required("Username is required"),
     ...(adminDetails
       ? {}
       : {
@@ -196,25 +213,23 @@ function SignupForm() {
                   </div>
                 </>
               )}
-              <div className="flex items-center my-4">
+              <div className="my-4">
                 <div className="flex items-center">
-                  <label>
+                  <label className="flex items-center">
                     <Field
                       type="radio"
                       name="gender"
                       value="male"
-                      className="radio mx-2"
+                      className="radio mx-2 w-5 h-5"
                     />
                     Male
                   </label>
-                </div>
-                <div className="flex items-center">
-                  <label>
+                  <label className="flex items-center">
                     <Field
                       type="radio"
                       name="gender"
                       value="female"
-                      className="radio mx-2"
+                      className="radio mx-2 w-5 h-5"
                     />
                     Female
                   </label>
@@ -222,7 +237,7 @@ function SignupForm() {
                 <ErrorMessage
                   name="gender"
                   component="div"
-                  className="text-red-600"
+                  className="text-red-600 pl-1"
                 />
               </div>
               <p className="text-center my-2">
