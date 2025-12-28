@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import axiosInterceptors from "../components/app/axiosInterceptors";
 import toast from "react-hot-toast";
 import deleteIcon from "../assets/delete.png";
 import { useDispatch, useSelector } from "react-redux";
-import { setGroups, updateSelectedUser } from "../redux/userSlice";
+import { setGroups } from "../redux/userSlice";
 import DialogWrapper from "./DialogWrapper";
 
 const CommanGroupModal = ({
@@ -19,9 +19,14 @@ const CommanGroupModal = ({
   const dispatch = useDispatch();
   const Groups = useSelector((store) => store.user.groups);
   const [isAddMemberMode, setIsAddMemberMode] = useState(false);
+  const [deleteGroupLoading, setDeleteGroupLoading] = useState(false);
+  const [removeMemberLoading, setRemoveMemberLoading] = useState(false);
+  const [addMembersLoading, setAddMembersLoading] = useState(false);
 
   const deleteGroup = async (groupId) => {
     if (!groupId) return;
+    setDeleteGroupLoading(true);
+
     try {
       const response = await axiosInterceptors.delete(`/group/${groupId}`);
       const updatedGroups = Groups?.filter((group) => group._id !== groupId);
@@ -32,11 +37,15 @@ const CommanGroupModal = ({
       const errorMessage =
         error.response?.data?.message || "Failed to delete group";
       toast.error(errorMessage);
+    } finally {
+      setDeleteGroupLoading(false);
     }
   };
 
   const removeMemberFromGroup = async (groupId, memberId) => {
     if (!groupId || !memberId) return;
+    setRemoveMemberLoading(true);
+
     try {
       const response = await axiosInterceptors.delete(
         `/group/${groupId}/member/${memberId}`
@@ -48,6 +57,8 @@ const CommanGroupModal = ({
       const errorMessage =
         error.response?.data?.message || "Failed to remove member";
       toast.error(errorMessage);
+    } finally {
+      setRemoveMemberLoading(false);
     }
   };
 
@@ -61,6 +72,7 @@ const CommanGroupModal = ({
       toast.error("No new members selected.");
       return;
     }
+    setAddMembersLoading(true);
 
     try {
       const res = await axiosInterceptors.post(
@@ -74,6 +86,8 @@ const CommanGroupModal = ({
       toast.error(
         error.response?.data?.message || "Failed to add members to group"
       );
+    } finally {
+      setAddMembersLoading(false);
     }
   };
 
@@ -139,6 +153,7 @@ const CommanGroupModal = ({
                     className={`btn ${
                       selectedUser?.admin === authUser?._id ? "" : "hidden"
                     } ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
+                    disabled={removeMemberLoading}
                     onClick={() =>
                       removeMemberFromGroup(selectedUser?._id, member._id)
                     }
@@ -181,6 +196,7 @@ const CommanGroupModal = ({
                   className={`btn mx-3 ${
                     selectedUser?.admin === authUser?._id ? "" : "hidden"
                   }`}
+                  disabled={deleteGroupLoading}
                   onClick={() => {
                     deleteGroup(selectedUser?._id);
                   }}
@@ -273,6 +289,7 @@ const CommanGroupModal = ({
               <div className="flex justify-end gap-3">
                 <button
                   className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-md text-white font-medium transition"
+                  disabled={addMembersLoading}
                   onClick={() => {
                     if (isAddMemberMode) {
                       addMembersToGroup();

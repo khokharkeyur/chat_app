@@ -1,5 +1,5 @@
 import axiosInterceptors from "../components/app/axiosInterceptors";
-import React from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import * as Yup from "yup";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const initialValues = {
     username: "",
@@ -23,6 +24,8 @@ const Login = () => {
   });
 
   const onSubmit = async (values, { resetForm }) => {
+    if (loading) return;
+    setLoading(true);
     try {
       const res = await axiosInterceptors.post("/user/login", values);
       const { token, refreshToken, ...userData } = res.data;
@@ -34,6 +37,7 @@ const Login = () => {
       toast.error(error.response?.data?.message || "An error occurred");
       console.log(error);
     } finally {
+      setLoading(false);
       resetForm();
     }
   };
