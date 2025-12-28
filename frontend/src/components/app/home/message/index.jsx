@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import SendInput from "./SendInput";
 import ManyMessage from "./ManyMessage";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,6 +21,8 @@ function Message() {
   useGetOtherUsers();
   const [groupMember, setGroupMember] = React.useState([]);
   const [groupName, setGroupName] = React.useState("");
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
   const authUserId = authUser?._id;
   function viewProfile() {
@@ -28,6 +30,9 @@ function Message() {
   }
   const dispatch = useDispatch();
   const handleBlockUser = async (userId) => {
+    if (isBlocking) return;
+    setIsBlocking(true);
+
     try {
       const res = await axiosInterceptors.put("/user/block", { userId });
       if (res.status === 200) {
@@ -42,10 +47,13 @@ function Message() {
         "Error blocking user:",
         error.response?.data?.message || error.message
       );
+    } finally {
+      setIsBlocking(false);
     }
   };
 
   async function createGroup() {
+    if (isCreatingGroup) return;
     if (!groupName.trim()) {
       toast.error("Group name is required");
       return;
@@ -54,6 +62,7 @@ function Message() {
       toast.error("Please add at least one member to the group");
       return;
     }
+    setIsCreatingGroup(true);
     try {
       const updatedGroupMembers = [...groupMember, { _id: authUserId }];
       const groupMemberIds = updatedGroupMembers.map((user) => user._id);
@@ -74,6 +83,8 @@ function Message() {
       toast.success(response.data.message);
     } catch (error) {
       console.error("Error creating group:", error);
+    } finally {
+      setIsCreatingGroup(false);
     }
   }
 
@@ -130,6 +141,7 @@ function Message() {
                         <p
                           className="btn text-red-500"
                           onClick={() => handleBlockUser(selectedUser?._id)}
+                          disabled={isBlocking}
                         >
                           Block
                         </p>

@@ -61,7 +61,7 @@ function Sidebar() {
       dispatch(setOtherUsers(filteredUsers));
       dispatch(setGroups(filteredGroups));
     } else {
-      toast.error("User or group not found!");
+      toast.error("User or group not found!", { id: "search-error" });
       dispatch(setOtherUsers(allUsers));
       dispatch(setGroups(allGroups));
     }

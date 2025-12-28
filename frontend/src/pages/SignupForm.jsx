@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axiosInterceptors from "../components/app/axiosInterceptors";
 import toast from "react-hot-toast";
@@ -8,6 +8,7 @@ import * as Yup from "yup";
 function SignupForm() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState(false);
   const adminDetails = location.state?.adminDetails;
 
   const initialValues = {
@@ -57,6 +58,8 @@ function SignupForm() {
   });
 
   const onSubmit = async (values, { resetForm }) => {
+    if (loading) return;
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append("fullName", values.fullName);
@@ -90,8 +93,10 @@ function SignupForm() {
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
       console.log(error);
+    } finally {
+      setLoading(false);
+      resetForm();
     }
-    resetForm();
   };
 
   return (
