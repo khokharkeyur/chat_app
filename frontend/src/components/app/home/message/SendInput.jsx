@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setEditMessage, setMessages } from "../../../../redux/messageSlice";
 import { useSocket } from "../../../../config/SocketContext";
 
-function SendInput() {
+function SendInput({ mobileWidth }) {
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
   const { authUser, selectedUser } = useSelector((store) => store.user);
@@ -64,7 +64,10 @@ function SendInput() {
 
   return (
     <div>
-      <form onSubmit={onSubmitHandler} className="px-4 my-3">
+      <form
+        onSubmit={onSubmitHandler}
+        className={`${mobileWidth ? "px-2" : "px-4"} my-3`}
+      >
         <div className="w-full relative">
           <div className="border text-sm rounded-lg block w-full p-3 border-zinc-500 bg-gray-600 text-white">
             <input
