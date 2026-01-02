@@ -84,75 +84,80 @@ function Dashboard() {
   };
 
   return (
-    <div className="w-[80%]">
-      <div className=" flex justify-end">
-        <Tooltip title="Account settings">
-          <IconButton
-            onClick={handleClick}
-            size="small"
-            sx={{ ml: 2 }}
-            aria-controls={open ? "account-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? "true" : undefined}
-          >
-            <Avatar sx={{ width: 32, height: 32 }}>
-              {adminDetails?.fullName?.charAt(0)}
-            </Avatar>
-          </IconButton>
-        </Tooltip>
-        <Menu
-          anchorEl={anchorEl}
-          id="account-menu"
-          open={open}
-          onClose={handleClose}
-          onClick={handleClose}
-          slotProps={{
-            paper: {
-              elevation: 0,
-              sx: {
-                overflow: "visible",
-                background: "#1F2937",
-                color: "white",
-                filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-                mt: 1.5,
-                "& .MuiAvatar-root": {
-                  width: 32,
-                  height: 32,
-                  ml: -0.5,
-                  mr: 1,
-                },
-                "&::before": {
-                  content: '""',
-                  display: "block",
-                  position: "absolute",
-                  top: 0,
-                  right: 14,
-                  width: 10,
-                  height: 10,
-                  bgcolor: "background.paper",
-                  transform: "translateY(-50%) rotate(45deg)",
-                  zIndex: 0,
+    <div className="w-[100%]">
+      <div className="flex justify-between">
+        <h2 className="text-2xl font-bold text-center flex items-center">
+          Chat App
+        </h2>
+        <div className=" flex">
+          <Tooltip title="Account settings">
+            <IconButton
+              onClick={handleClick}
+              size="small"
+              sx={{ ml: 2 }}
+              aria-controls={open ? "account-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+            >
+              <Avatar sx={{ width: 32, height: 32 }}>
+                {adminDetails?.fullName?.charAt(0)}
+              </Avatar>
+            </IconButton>
+          </Tooltip>
+          <Menu
+            anchorEl={anchorEl}
+            id="account-menu"
+            open={open}
+            onClose={handleClose}
+            onClick={handleClose}
+            slotProps={{
+              paper: {
+                elevation: 0,
+                sx: {
+                  overflow: "visible",
+                  background: "#1F2937",
+                  color: "white",
+                  filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                  mt: 1.5,
+                  "& .MuiAvatar-root": {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  "&::before": {
+                    content: '""',
+                    display: "block",
+                    position: "absolute",
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: "background.paper",
+                    transform: "translateY(-50%) rotate(45deg)",
+                    zIndex: 0,
+                  },
                 },
               },
-            },
-          }}
-          transformOrigin={{ horizontal: "right", vertical: "top" }}
-          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        >
-          <MenuItem onClick={() => openDialog("adminDetailsDialog")}>
-            <Avatar /> Profile
-          </MenuItem>
-          <MenuItem onClick={handleEditProfile}>
-            <Avatar /> Edit Profile
-          </MenuItem>
-          <MenuItem onClick={() => navigate("/forgetPassword")}>
-            <Avatar /> Change Password
-          </MenuItem>
-          <MenuItem onClick={() => openDialog("blockedUsersDialog")}>
-            <Avatar /> Blocked User
-          </MenuItem>
-          <Divider />
-        </Menu>
+            }}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          >
+            <MenuItem onClick={() => openDialog("adminDetailsDialog")}>
+              <Avatar /> Profile
+            </MenuItem>
+            <MenuItem onClick={handleEditProfile}>
+              <Avatar /> Edit Profile
+            </MenuItem>
+            <MenuItem onClick={() => navigate("/forgetPassword")}>
+              <Avatar /> Change Password
+            </MenuItem>
+            <MenuItem onClick={() => openDialog("blockedUsersDialog")}>
+              <Avatar /> Blocked User
+            </MenuItem>
+            <Divider />
+          </Menu>
+        </div>
       </div>
 
       <AdminDetailsDialog

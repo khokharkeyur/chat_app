@@ -9,7 +9,7 @@ function OtherUsers() {
   useGetGroups();
   const { groups, otherUsers } = useSelector((store) => store.user);
   return (
-    <div className="overflow-auto flex-1 sm:block">
+    <div className="overflow-auto flex-1 sm:block mt-2">
       {groups &&
         groups?.map((group) => <OtherUser key={group._id} user={group} />)}
       {otherUsers?.map((user) => (

@@ -9,9 +9,10 @@ import CommanGroupModal from "../../../../comman/CommanGroupModal";
 import DialogWrapper from "../../../../comman/DialogWrapper";
 import useGetRealTimeEvents from "../../../../hooks/useGetRealTimeEvents";
 import useGetGroups from "../../../../hooks/usegetGroups";
+import BackIcon from "../../../../assets/back.png";
 import { removeOtherUser, setSelectedUser } from "../../../../redux/userSlice";
 
-function Message() {
+function Message({ mobileWidth }) {
   useGetRealTimeEvents();
   useGetGroups();
 
@@ -92,8 +93,19 @@ function Message() {
     <>
       {selectedUser !== null ? (
         <div className=" max-h-[80%] flex flex-col w-full">
-          <div className="flex gap-2 items-center bg-zinc-700 text-white px-4 py-2 mb-2 w-full">
-            <div>
+          <div
+            className={`flex gap-2 items-center bg-zinc-700 text-white ${mobileWidth ? "px-2" : "px-4"} py-2 mb-2 w-full`}
+          >
+            <div className="flex items-center gap-2">
+              {mobileWidth && (
+                <img
+                  src={BackIcon}
+                  onClick={() => dispatch(setSelectedUser(null))}
+                  alt=""
+                  className="w-4 h-4 filter invert brightness-0 cursor-pointer"
+                />
+              )}
+
               <button
                 className="w-full flex items-center cursor-pointer gap-2"
                 onClick={() => {
@@ -186,7 +198,7 @@ function Message() {
             </div>
           </div>
           <ManyMessage />
-          <SendInput />
+          <SendInput mobileWidth={mobileWidth} />
         </div>
       ) : (
         <div className="max-h-[80%] flex flex-col justify-center items-center w-full">

@@ -15,7 +15,7 @@ import Cookies from "js-cookie";
 import useGetOtherUsers from "../../../../hooks/useGetOtherUsers";
 import useGetGroups from "../../../../hooks/usegetGroups";
 
-function Sidebar() {
+function Sidebar({ mobileWidth }) {
   const [search, setSearch] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [allGroups, setAllGroups] = useState([]);
@@ -82,7 +82,9 @@ function Sidebar() {
   };
 
   return (
-    <div className="border-r border-slate-500 p-4 flex flex-col max-h-[80%] w-[40%]">
+    <div
+      className={`flex flex-col max-h-[80%] ${mobileWidth ? "w-[100%]" : "w-[40%] border-r border-slate-500 pr-4 pb-4"}`}
+    >
       <form
         onSubmit={searchSubmitHandler}
         action=""
@@ -99,7 +101,6 @@ function Sidebar() {
           <BiSearchAlt2 className="w-6 h-6 outline-none" />
         </button>
       </form>
-      <div className="divider px-3"></div>
       <OtherUsers />
       <div className="mt-2">
         <button onClick={logoutHandler} className="btn btn-sm">
