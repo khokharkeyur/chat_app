@@ -6,6 +6,8 @@ import axiosInterceptors from "../components/app/axiosInterceptors";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import Cookies from "js-cookie";
+import { useWindowSize } from "../config/WindowSizeContext";
+import { getMobileWidth } from "../helper/widthCondition";
 
 const LoaderButton = ({
   isLoading,
@@ -31,6 +33,8 @@ const LoaderButton = ({
 function ForgotPassword() {
   const { authUser } = useSelector((store) => store.user);
   const navigate = useNavigate();
+  const { width } = useWindowSize();
+  const mobileWidth = getMobileWidth(width);
   const token = Cookies.get("AccessToken");
 
   const [formState, setFormState] = useState({
@@ -147,7 +151,7 @@ function ForgotPassword() {
   });
 
   return (
-    <div className="min-w-96 mx-auto">
+    <div className={`${mobileWidth ? "" : "min-w-96"} mx-auto`}>
       <div className="w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border border-gray-100">
         <h1 className="text-3xl font-bold text-center mb-4">Forgot Password</h1>
 
