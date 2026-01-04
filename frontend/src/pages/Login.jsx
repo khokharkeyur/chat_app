@@ -7,10 +7,14 @@ import { setAuthUser } from "../redux/userSlice";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import Cookies from "js-cookie";
 import * as Yup from "yup";
+import { getMobileWidth } from "../helper/widthCondition";
+import { useWindowSize } from "../config/WindowSizeContext";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { width } = useWindowSize();
+  const mobileWidth = getMobileWidth(width);
   const [loading, setLoading] = useState(false);
 
   const initialValues = {
@@ -43,7 +47,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-w-96 mx-auto">
+    <div className={`${mobileWidth ? "" : "min-w-96"} mx-auto`}>
       <div className="w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border border-gray-100">
         <h1 className="text-3xl font-bold text-center">Login</h1>
         <Formik
