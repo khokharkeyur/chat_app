@@ -180,15 +180,15 @@ export const deleteMessage = async (req, res) => {
       return res.status(404).json({ error: "Message not found" });
     }
 
+    const conversation = await Conversation.findOne({ messages: messageId });
+    const isGroup = conversation?.isGroup;
+
     await Conversation.updateOne(
       { messages: messageId },
       { $pull: { messages: messageId } }
     );
 
     await Message.findByIdAndDelete(messageId);
-
-    const conversation = await Conversation.findOne({ messages: messageId });
-    const isGroup = conversation?.isGroup;
 
     if (isGroup) {
       const group = await Group.findById(message.receiverId);

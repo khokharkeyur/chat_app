@@ -66,15 +66,6 @@ io.on("connection", (socket) => {
       }
     }
   );
-  socket.on("deleteMessage", async (messageId) => {
-    try {
-      const deletedMessage = await Message.findByIdAndDelete(messageId);
-
-      io.emit("messageDeleted", deletedMessage);
-    } catch (error) {
-      console.error("Error deleting message:", error);
-    }
-  });
 
   socket.on("joinGroup", (groupId) => {
     socket.join(groupId);
