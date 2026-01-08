@@ -47,13 +47,6 @@ const useGetRealTimeEvents = () => {
         dispatch(setMessages(messages.filter((msg) => msg._id !== messageId)));
       });
 
-      socket.on("messageDeleted", (deletedMessage) => {
-        const updatedMessages = messages.filter(
-          (msg) => msg._id !== deletedMessage._id
-        );
-        dispatch(setMessages(updatedMessages));
-      });
-
       socket.on("groupCreated", (newGroup) => {
         dispatch(setGroups([...(groups || []), newGroup]));
       });
@@ -139,7 +132,6 @@ const useGetRealTimeEvents = () => {
       socket?.off("newMessage");
       socket?.off("messageUpdated");
       socket?.off("deleteMessage");
-      socket?.off("messageDeleted");
       socket?.off("groupCreated");
       socket?.off("groupDeleted");
       socket?.off("memberRemoved");
