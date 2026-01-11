@@ -28,7 +28,7 @@ export const sendMessage = async (req, res) => {
       });
 
       let gotConversation = await Conversation.findOne({
-        participants: { $all: group.members, $size: group.members.length },
+        groupId: receiverId,
       });
 
       if (!gotConversation) {

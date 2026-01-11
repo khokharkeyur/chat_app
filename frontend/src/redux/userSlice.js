@@ -18,18 +18,14 @@ const userSlice = createSlice({
       state.otherUsers = action.payload;
     },
     setGroups: (state, action) => {
-      // console.log('action', action.payload)
       state.groups = action.payload;
     },
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
     },
     updateSelectedUser: (state, action) => {
-      state.selectedUser = action.payload; // New action to update selectedUser
+      state.selectedUser = action.payload;
     },
-    // setSearchUser: (state, action) => {
-    //   state.searchUser = action.payload;
-    // },
     setOnlineUsers: (state, action) => {
       state.onlineUsers = action.payload;
     },
@@ -71,6 +67,6 @@ export const {
   removeGroup,
   removeOtherUser,
   updateUserLastMessage,
-  updateGroupLastMessage
+  updateGroupLastMessage,
 } = userSlice.actions;
 export default userSlice.reducer;
