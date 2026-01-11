@@ -16,7 +16,6 @@ export const SocketProvider = ({ children }) => {
     socket.connect();
 
     socket.on("getOnlineUsers", (users) => {
-      console.log("Online users →", users);
       dispatch(setOnlineUsers(users));
     });
 

@@ -52,7 +52,6 @@ const useGetRealTimeEvents = () => {
       });
 
       socket.on("lastMessageUpdated", (payload) => {
-        console.log("payload.type", payload);
         if (payload.type === "group") {
           dispatch(
             updateGroupLastMessage({
@@ -109,19 +108,6 @@ const useGetRealTimeEvents = () => {
         const oldGroups = groups || [];
         const newGroups = oldGroups.filter((g) => g._id !== groupId);
         dispatch(setGroups(newGroups));
-
-        // const updatedGroups = groups?.map((group) =>
-        //   group._id === groupId
-        //     ? {
-        //         ...group,
-        //         members: group.members.filter(
-        //           (member) => member._id !== memberId
-        //         ),
-        //       }
-        //     : group
-        // );
-        // console.log("updatedGroups after member removal", updatedGroups);
-        // dispatch(setGroups(updatedGroups));
         if (selectedUser?._id === groupId) {
           dispatch(setSelectedUser(null));
         }
