@@ -84,12 +84,11 @@ export const deleteGroup = async (req, res) => {
 
 export const removeMemberFromGroup = async (req, res) => {
   try {
-    const { groupId, memberId } = req.params;
+    const { groupId, memberId } = req.body;
+    const userId = req.id;
 
-    if (!groupId || !memberId) {
-      return res
-        .status(400)
-        .json({ message: "Group ID and Member ID are required" });
+    if (!groupId) {
+      return res.status(400).json({ message: "Group ID is required" });
     }
 
     const group = await Group.findById(groupId);
@@ -97,9 +96,36 @@ export const removeMemberFromGroup = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
 
-    group.members = group.members.filter(
-      (member) => member.toString() !== memberId
-    );
+    const isAdmin = group.admin.toString() === userId.toString();
+
+    if (isAdmin) {
+      if (!memberId) {
+        return res.status(400).json({ message: "Member ID is required" });
+      }
+      if (memberId.toString() === userId.toString()) {
+        return res
+          .status(403)
+          .json({ message: "Admin cannot remove himself from the group" });
+      }
+
+      if (!group.members.includes(memberId)) {
+        return res.status(400).json({ message: "User is not a group member" });
+      }
+
+      group.members = group.members.filter(
+        (member) => member.toString() !== memberId.toString()
+      );
+    } else {
+      if (!group.members.includes(userId)) {
+        return res
+          .status(400)
+          .json({ message: "You are not a member of this group" });
+      }
+
+      group.members = group.members.filter(
+        (member) => member.toString() !== userId.toString()
+      );
+    }
 
     await group.save();
 
@@ -108,17 +134,19 @@ export const removeMemberFromGroup = async (req, res) => {
       select: "-password -blockedUsers -__v",
     });
 
-    const removedMemberSocketId = getReceiverSocketId(memberId);
-    if (removedMemberSocketId) {
-      io.to(removedMemberSocketId).emit("memberRemoved", {
+    const removedSocketId = getReceiverSocketId(
+      memberId ? memberId.toString() : userId.toString()
+    );
+    if (removedSocketId) {
+      io.to(removedSocketId).emit("memberRemoved", {
         groupId,
-        memberId,
+        memberId: memberId ? memberId.toString() : userId.toString(),
         updatedGroup: populatedGroup,
       });
     }
 
-    group.members.forEach((memberId) => {
-      const memberSocketId = getReceiverSocketId(memberId.toString());
+    populatedGroup.members.forEach((member) => {
+      const memberSocketId = getReceiverSocketId(member._id.toString());
       if (memberSocketId) {
         io.to(memberSocketId).emit("groupUpdated", {
           groupId,
@@ -128,15 +156,16 @@ export const removeMemberFromGroup = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Member removed successfully",
-      group,
+      message: isAdmin
+        ? "Member removed successfully"
+        : "Exited group successfully",
+      group: populatedGroup,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 export const addMembersToGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
