@@ -42,14 +42,15 @@ const CommanGroupModal = ({
     }
   };
 
-  const removeMemberFromGroup = async (groupId, memberId) => {
-    if (!groupId || !memberId) return;
+  const removeMemberFromGroup = async (groupId, memberId = "") => {
+    if (!groupId) return;
     setRemoveMemberLoading(true);
 
     try {
-      const response = await axiosInterceptors.delete(
-        `/group/${groupId}/member/${memberId}`
-      );
+      const response = await axiosInterceptors.post("/group/remove-member", {
+        groupId,
+        ...(memberId && { memberId }),
+      });
 
       toast.success(response.data.message);
     } catch (error) {
@@ -180,29 +181,39 @@ const CommanGroupModal = ({
                 >
                   Close
                 </button>
-                <button
-                  className={`btn ml-3 ${
-                    selectedUser?.admin === authUser?._id ? "" : "hidden"
-                  }`}
-                  onClick={() => {
-                    setIsAddMemberMode(true);
-                    setGroupName(selectedUser?.name || "");
-                    setGroupMember(selectedUser?.members || []);
-                  }}
-                >
-                  Add Member
-                </button>
-                <button
-                  className={`btn mx-3 ${
-                    selectedUser?.admin === authUser?._id ? "" : "hidden"
-                  }`}
-                  disabled={deleteGroupLoading}
-                  onClick={() => {
-                    deleteGroup(selectedUser?._id);
-                  }}
-                >
-                  <img src={deleteIcon} className="w-4" alt="" />
-                </button>
+                {selectedUser?.admin === authUser?._id ? (
+                  <>
+                    <button
+                      className="btn ml-3"
+                      onClick={() => {
+                        setIsAddMemberMode(true);
+                        setGroupName(selectedUser?.name || "");
+                        setGroupMember(selectedUser?.members || []);
+                      }}
+                    >
+                      Add Member
+                    </button>
+                    <button
+                      className="btn mx-3"
+                      disabled={deleteGroupLoading}
+                      onClick={() => {
+                        deleteGroup(selectedUser?._id);
+                      }}
+                    >
+                      <img src={deleteIcon} className="w-4" alt="" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="btn ml-3 text-red-400"
+                      disabled={removeMemberLoading}
+                      onClick={() => removeMemberFromGroup(selectedUser?._id)}
+                    >
+                      Exit Group
+                    </button>
+                  </>
+                )}
               </form>
             </div>
           </>
