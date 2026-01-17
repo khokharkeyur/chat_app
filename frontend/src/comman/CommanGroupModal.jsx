@@ -150,24 +150,27 @@ const CommanGroupModal = ({
                         : member?.fullName}
                     </p>
                   </div>
-                  <button
-                    className={`btn ${
-                      selectedUser?.admin === authUser?._id ? "" : "hidden"
-                    } ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
-                    disabled={removeMemberLoading}
-                    onClick={() =>
-                      removeMemberFromGroup(selectedUser?._id, member._id)
-                    }
-                  >
-                    Remove Member
-                  </button>
-                  <button
-                    className={`btn ${
-                      selectedUser?.admin === authUser?._id ? "hidden" : ""
-                    } ${selectedUser?.admin === member?._id ? "" : "hidden"}`}
-                  >
-                    Admin
-                  </button>
+                  {selectedUser?.admin === authUser?._id ? (
+                    <button
+                      className={`btn ${
+                        selectedUser?.admin === authUser?._id ? "" : "hidden"
+                      } ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
+                      disabled={removeMemberLoading}
+                      onClick={() =>
+                        removeMemberFromGroup(selectedUser?._id, member._id)
+                      }
+                    >
+                      Remove Member
+                    </button>
+                  ) : (
+                    <button
+                      className={`btn ${
+                        selectedUser?.admin === authUser?._id ? "hidden" : ""
+                      } ${selectedUser?.admin === member?._id ? "" : "hidden"}`}
+                    >
+                      Admin
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
