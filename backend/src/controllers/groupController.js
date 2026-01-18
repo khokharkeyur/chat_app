@@ -18,9 +18,7 @@ export const createGroup = async (req, res) => {
     if (existingGroup) {
       return res.status(400).json({ message: "Group name already exists" });
     }
-    const groupProfilePhoto = `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(
-      groupName
-    )}`;
+    const groupProfilePhoto = `https://ui-avatars.com/api/?name=${groupName}&background=random`;
     const newGroup = await Group.create({
       name: groupName,
       members: memberIds,
@@ -113,7 +111,7 @@ export const removeMemberFromGroup = async (req, res) => {
       }
 
       group.members = group.members.filter(
-        (member) => member.toString() !== memberId.toString()
+        (member) => member.toString() !== memberId.toString(),
       );
     } else {
       if (!group.members.includes(userId)) {
@@ -123,7 +121,7 @@ export const removeMemberFromGroup = async (req, res) => {
       }
 
       group.members = group.members.filter(
-        (member) => member.toString() !== userId.toString()
+        (member) => member.toString() !== userId.toString(),
       );
     }
 
@@ -135,7 +133,7 @@ export const removeMemberFromGroup = async (req, res) => {
     });
 
     const removedSocketId = getReceiverSocketId(
-      memberId ? memberId.toString() : userId.toString()
+      memberId ? memberId.toString() : userId.toString(),
     );
     if (removedSocketId) {
       io.to(removedSocketId).emit("memberRemoved", {
@@ -184,7 +182,7 @@ export const addMembersToGroup = async (req, res) => {
 
     // Add only new members (avoid duplicates)
     const newMembers = memberIds.filter(
-      (id) => !group.members.map((m) => m.toString()).includes(id)
+      (id) => !group.members.map((m) => m.toString()).includes(id),
     );
     group.members.push(...newMembers);
 
@@ -244,7 +242,7 @@ export const getAllGroups = async (req, res) => {
             ? { message: lastMessage.message, createdAt: lastMessage.createdAt }
             : null,
         };
-      })
+      }),
     );
     return res.status(200).json({
       message: "Groups retrieved successfully",

@@ -52,10 +52,7 @@ export const register = async (req, res) => {
       await fileRef.put(req.file.buffer);
       profilePhoto = await fileRef.getDownloadURL();
     } else {
-      profilePhoto =
-        gender === "male"
-          ? `https://avatar.iran.liara.run/public/boy?username=${username}`
-          : `https://avatar.iran.liara.run/public/girl?username=${username}`;
+      profilePhoto = `https://ui-avatars.com/api/?name=${username}&background=random`;
     }
     await User.create({
       fullName,
@@ -233,7 +230,7 @@ export const refreshToken = async (req, res) => {
     const newAccessToken = jwt.sign(
       { userId: decoded.userId },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     res.status(200).json({ accessToken: newAccessToken });
@@ -269,7 +266,7 @@ export const getOtherUsers = async (req, res) => {
       otherUsers.map(async (user) => {
         const lastMessage = await getLastMessageBetweenUsers(
           loggedInUserId,
-          user._id
+          user._id,
         );
         return {
           ...user.toObject(),
@@ -277,7 +274,7 @@ export const getOtherUsers = async (req, res) => {
             ? { message: lastMessage.message, createdAt: lastMessage.createdAt }
             : null,
         };
-      })
+      }),
     );
 
     return res.status(200).json(usersWithLastMessage);
@@ -351,7 +348,7 @@ export const getBlockedUsers = async (req, res) => {
 
     const user = await User.findById(loggedInUserId).populate(
       "blockedUsers",
-      "-password"
+      "-password",
     );
 
     if (!user) {
@@ -382,7 +379,7 @@ export const unblockUser = async (req, res) => {
       return res.status(400).json({ message: "User is not blocked" });
     }
     loggedInUser.blockedUsers = loggedInUser.blockedUsers.filter(
-      (blockedUserId) => !blockedUserId.equals(userId)
+      (blockedUserId) => !blockedUserId.equals(userId),
     );
     await loggedInUser.save();
 
