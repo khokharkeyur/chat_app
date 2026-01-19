@@ -14,23 +14,21 @@ let persistor = persistStore(store);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <SocketProvider>
-          <WindowSizeProvider>
-            <App />
-          </WindowSizeProvider>
-        </SocketProvider>
-        <Toaster
-          toastOptions={{
-            position: "top-right",
-            style: {
-              zIndex: 1110,
-            },
-          }}
-        />
-      </PersistGate>
-    </Provider>
-  </React.StrictMode>
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <SocketProvider>
+        <WindowSizeProvider>
+          <App />
+        </WindowSizeProvider>
+      </SocketProvider>
+      <Toaster
+        toastOptions={{
+          position: "top-right",
+          style: {
+            zIndex: 1110,
+          },
+        }}
+      />
+    </PersistGate>
+  </Provider>,
 );
