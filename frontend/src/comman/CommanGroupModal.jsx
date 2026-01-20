@@ -142,7 +142,7 @@ const CommanGroupModal = ({
                     <img
                       src={member?.profilePhoto}
                       alt=""
-                      className="mr-4 w-12"
+                      className="mr-4 w-12 rounded-full"
                     />
                     <p className="pt-2 pb-4">
                       {member?.fullName === GroupMemberIsAuthUser?.fullName
