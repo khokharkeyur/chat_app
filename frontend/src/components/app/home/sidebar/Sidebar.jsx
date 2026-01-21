@@ -19,8 +19,8 @@ import { useSelector } from "react-redux";
 function Sidebar({ mobileWidth }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const users = useSelector((state) => state.user.otherUsers);
-  const groups = useSelector((state) => state.user.groups);
+  const users = useSelector((state) => state.user.otherUsers) || [];
+  const groups = useSelector((state) => state.user.groups) || [];
 
   const dispatch = useDispatch();
   const navigate = useNavigate();

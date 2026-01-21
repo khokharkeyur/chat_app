@@ -3,8 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    authUser: null,
-    groups: null,
+    authUser: [],
+    groups: [],
     otherUsers: null,
     selectedUser: null,
     // searchUser: [],
@@ -32,18 +32,18 @@ const userSlice = createSlice({
     updateUserLastMessage: (state, action) => {
       const { userId, lastMessage } = action.payload;
       state.otherUsers = state.otherUsers.map((user) =>
-        user._id === userId ? { ...user, lastMessage } : user
+        user._id === userId ? { ...user, lastMessage } : user,
       );
     },
     updateGroupLastMessage: (state, action) => {
       const { groupId, lastMessage } = action.payload;
       state.groups = state.groups.map((group) =>
-        group._id === groupId ? { ...group, lastMessage } : group
+        group._id === groupId ? { ...group, lastMessage } : group,
       );
     },
     removeGroup: (state, action) => {
       state.groups = state.groups?.filter(
-        (group) => group._id !== action.payload
+        (group) => group._id !== action.payload,
       );
       if (state.selectedUser?._id === action.payload) {
         state.selectedUser = null;
@@ -51,7 +51,7 @@ const userSlice = createSlice({
     },
     removeOtherUser: (state, action) => {
       state.otherUsers = state.otherUsers.filter(
-        (user) => user._id !== action.payload
+        (user) => user._id !== action.payload,
       );
     },
   },
