@@ -1,11 +1,14 @@
 import { Conversation } from "../models/conversationModel.js";
 import { Message } from "../models/messageModel.js";
 import { Group } from "../models/groupModel.js";
+import { Emoji } from "../models/emojiModel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 import {
   getLastMessageBetweenUsers,
   getLastMessageForGroup,
 } from "../utils/lastMessage.js";
+import mongoose from "mongoose";
+import { getConversationMessagesAgg, getMessageWithEmojisAgg } from "../aggregations/messageAggragations.js";
 
 export const sendMessage = async (req, res) => {
   try {
@@ -86,7 +89,7 @@ export const sendMessage = async (req, res) => {
 
       const lastMessage = await getLastMessageBetweenUsers(
         senderId,
-        receiverId
+        receiverId,
       );
       [senderId, receiverId].forEach((uid) => {
         const socketId = getReceiverSocketId(uid.toString());
@@ -118,20 +121,24 @@ export const getMessage = async (req, res) => {
   try {
     const receiverId = req.params.id;
     const senderId = req.id;
+
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
       isGroup: false,
-    }).populate({
-      path: "messages",
-      populate: {
-        path: "emoji.sender",
-        select: "username profilePhoto",
-      },
     });
 
-    return res.status(200).json(conversation?.messages);
+    if (!conversation) {
+      return res.status(200).json([]);
+    }
+
+    const messagesWithEmojis = await Conversation.aggregate(
+      getConversationMessagesAgg(conversation._id),
+    );
+
+    return res.status(200).json(messagesWithEmojis);
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ error: "Failed to get messages" });
   }
 };
 
@@ -147,24 +154,23 @@ export const getGroupMessage = async (req, res) => {
     let conversation = await Conversation.findOne({
       groupId: groupId,
       isGroup: true,
-    }).populate({
-      path: "messages",
-      populate: {
-        path: "emoji.sender",
-        select: "username profilePhoto",
-      },
     });
 
     if (!conversation) {
-      conversation = await Conversation.create({
+      await Conversation.create({
         participants: group.members,
         groupId: group._id,
         isGroup: true,
         messages: [],
       });
+      return res.status(200).json([]);
     }
 
-    res.status(200).json(conversation.messages || []);
+    const messagesWithEmojis = await Conversation.aggregate(
+      getConversationMessagesAgg(conversation._id),
+    );
+
+    res.status(200).json(messagesWithEmojis);
   } catch (error) {
     console.error("Error in getGroupMessage:", error);
     res.status(500).json({ error: "Failed to get group messages" });
@@ -180,12 +186,14 @@ export const deleteMessage = async (req, res) => {
       return res.status(404).json({ error: "Message not found" });
     }
 
+    await Emoji.deleteMany({ messageId });
+
     const conversation = await Conversation.findOne({ messages: messageId });
     const isGroup = conversation?.isGroup;
 
     await Conversation.updateOne(
       { messages: messageId },
-      { $pull: { messages: messageId } }
+      { $pull: { messages: messageId } },
     );
 
     await Message.findByIdAndDelete(messageId);
@@ -213,7 +221,7 @@ export const deleteMessage = async (req, res) => {
 
       const lastMessage = await getLastMessageBetweenUsers(
         senderId,
-        receiverId
+        receiverId,
       );
 
       [senderId, receiverId].forEach((uid) => {
@@ -239,94 +247,90 @@ export const deleteMessage = async (req, res) => {
 export const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    const {
-      message: newMessageContent,
-      emoji,
-      emojiSender,
-      removeEmoji,
-    } = req.body;
-    let updatedMessage;
+    const senderId = req.id;
 
-    if (removeEmoji && emoji && emojiSender) {
-      await Message.findByIdAndUpdate(messageId, {
-        $pull: { emoji: { emoji, sender: emojiSender } },
-      });
+    const { message: newMessageContent, emoji, removeEmoji } = req.body;
 
-      updatedMessage = await Message.findById(messageId).populate(
-        "emoji.sender",
-        "username profilePhoto"
-      );
-    } else if (emoji && emojiSender) {
-      await Message.findByIdAndUpdate(messageId, {
-        $pull: { emoji: { sender: emojiSender } },
-      });
-
-      await Message.findByIdAndUpdate(messageId, {
-        $push: { emoji: { emoji, sender: emojiSender } },
-      });
-
-      updatedMessage = await Message.findById(messageId).populate(
-        "emoji.sender",
-        "username profilePhoto"
-      );
-    } else if (newMessageContent?.trim()) {
-      updatedMessage = await Message.findByIdAndUpdate(
+    // 1️⃣ REMOVE EMOJI
+    if (removeEmoji && emoji) {
+      await Emoji.findOneAndDelete({
         messageId,
-        { message: newMessageContent },
-        { new: true }
+        senderId,
+      });
+    }
+
+    // 2️⃣ ADD / UPDATE EMOJI
+    if (emoji && !removeEmoji) {
+      await Emoji.findOneAndUpdate(
+        { messageId, senderId },
+        { emoji },
+        { upsert: true },
       );
     }
 
-    if (updatedMessage) {
-      const conversation = await Conversation.findOne({ messages: messageId });
-      const isGroup = conversation?.isGroup;
+    // 3️⃣ UPDATE MESSAGE TEXT
+    if (newMessageContent?.trim()) {
+      await Message.findByIdAndUpdate(messageId, {
+        message: newMessageContent,
+      });
+    }
 
-      if (isGroup) {
-        const group = await Group.findById(updatedMessage.receiverId);
-        if (group) {
-          const lastMessage = await getLastMessageForGroup(
-            updatedMessage.receiverId
-          );
-          group.members.forEach((memberId) => {
-            const socketId = getReceiverSocketId(memberId.toString());
-            if (socketId) {
-              io.to(socketId).emit("messageUpdated", updatedMessage);
-              if (newMessageContent?.trim()) {
-                io.to(socketId).emit("lastMessageUpdated", {
-                  groupId: updatedMessage.receiverId,
-                  lastMessage,
-                  type: "group",
-                });
-              }
-            }
-          });
-        }
-      } else {
-        const { senderId, receiverId } = updatedMessage;
+    // 4️⃣ AGGREGATION → FINAL MESSAGE PAYLOAD
+    const [updatedMessage] = await Message.aggregate(
+      getMessageWithEmojisAgg(messageId),
+    );
 
-        const lastMessage = await getLastMessageBetweenUsers(
-          senderId,
-          receiverId
+    if (!updatedMessage) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // 5️⃣ SOCKET LOGIC (UNCHANGED)
+    const conversation = await Conversation.findOne({ messages: messageId });
+    const isGroup = conversation?.isGroup;
+
+    if (isGroup) {
+      const group = await Group.findById(updatedMessage.receiverId);
+      if (group) {
+        const lastMessage = await getLastMessageForGroup(
+          updatedMessage.receiverId,
         );
 
-        [senderId, receiverId].forEach((uid) => {
-          const socketId = getReceiverSocketId(uid.toString());
+        group.members.forEach((memberId) => {
+          const socketId = getReceiverSocketId(memberId.toString());
           if (socketId) {
             io.to(socketId).emit("messageUpdated", updatedMessage);
+
             if (newMessageContent?.trim()) {
               io.to(socketId).emit("lastMessageUpdated", {
-                userId: uid === senderId ? receiverId : senderId,
+                groupId: updatedMessage.receiverId,
                 lastMessage,
-                type: "user",
+                type: "group",
               });
             }
           }
         });
       }
-    }
+    } else {
+      const { senderId, receiverId } = updatedMessage;
+      const lastMessage = await getLastMessageBetweenUsers(
+        senderId,
+        receiverId,
+      );
 
-    if (!updatedMessage) {
-      return res.status(404).json({ error: "Message not found" });
+      [senderId, receiverId].forEach((uid) => {
+        const socketId = getReceiverSocketId(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit("messageUpdated", updatedMessage);
+
+          if (newMessageContent?.trim()) {
+            io.to(socketId).emit("lastMessageUpdated", {
+              userId: uid === senderId ? receiverId : senderId,
+              lastMessage,
+              type: "user",
+            });
+          }
+        }
+      });
     }
 
     return res.status(200).json({ updatedMessage });
