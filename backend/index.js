@@ -11,7 +11,7 @@ dotenv.config();
 
 const PORT = process.env.PORT;
 
-const url = "mongodb://127.0.0.1:27017/chatApp";
+const url = process.env.MONGODB_URI;
 
 // Connect to MongoDB
 mongoose.connect(url);
