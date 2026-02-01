@@ -37,7 +37,7 @@ const useGetRealTimeEvents = () => {
       });
 
       socket.on("messageUpdated", (updatedMessage) => {
-        const updatedMessages = messages.map((msg) =>
+        const updatedMessages = messages?.map((msg) =>
           msg._id === updatedMessage._id ? updatedMessage : msg
         );
         dispatch(setMessages(updatedMessages));

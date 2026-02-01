@@ -9,7 +9,6 @@ import { useSocket } from "../../../../config/SocketContext";
 function ManyMessage() {
   useGetMessages();
   const { messages } = useSelector((store) => store.message);
-  const socket = useSocket();
 
   const handleDeleteMessage = async (messageId) => {
     try {
