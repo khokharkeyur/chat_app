@@ -7,6 +7,12 @@ const messageModel = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    conversationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conversation",
+      required: true,
+      index: true,
+    },
     receiverId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
