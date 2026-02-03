@@ -7,8 +7,10 @@ import {
   getLastMessageBetweenUsers,
   getLastMessageForGroup,
 } from "../utils/lastMessage.js";
-import mongoose from "mongoose";
-import { getConversationMessagesAgg, getMessageWithEmojisAgg } from "../aggregations/messageAggragations.js";
+import {
+  getConversationMessagesAgg,
+  getMessageWithEmojisAgg,
+} from "../aggregations/messageAggragations.js";
 
 export const sendMessage = async (req, res) => {
   try {
@@ -23,17 +25,11 @@ export const sendMessage = async (req, res) => {
     const group = await Group.findById(receiverId);
     let newMessage;
 
+    let gotConversation = await Conversation.findOne({
+      groupId: receiverId,
+    });
+
     if (group && type === "group") {
-      newMessage = await Message.create({
-        senderId,
-        receiverId,
-        message,
-      });
-
-      let gotConversation = await Conversation.findOne({
-        groupId: receiverId,
-      });
-
       if (!gotConversation) {
         gotConversation = await Conversation.create({
           participants: group.members,
@@ -42,9 +38,12 @@ export const sendMessage = async (req, res) => {
         });
       }
 
-      gotConversation.messages.push(newMessage._id);
-
-      await Promise.all([gotConversation.save(), newMessage.save()]);
+      newMessage = await Message.create({
+        senderId,
+        conversationId: gotConversation._id,
+        receiverId,
+        message,
+      });
 
       const lastMessage = await getLastMessageForGroup(receiverId);
       const allMembers = group.members;
@@ -79,13 +78,14 @@ export const sendMessage = async (req, res) => {
       }
 
       newMessage = await Message.create({
+        conversationId: gotConversation._id,
         senderId,
         receiverId,
         message,
       });
 
-      gotConversation.messages.push(newMessage._id);
-      await Promise.all([gotConversation.save(), newMessage.save()]);
+      gotConversation.lastMessage = newMessage._id;
+      await gotConversation.save();
 
       const lastMessage = await getLastMessageBetweenUsers(
         senderId,
@@ -131,7 +131,7 @@ export const getMessage = async (req, res) => {
       return res.status(200).json([]);
     }
 
-    const messagesWithEmojis = await Conversation.aggregate(
+    const messagesWithEmojis = await Message.aggregate(
       getConversationMessagesAgg(conversation._id),
     );
 
@@ -145,10 +145,17 @@ export const getMessage = async (req, res) => {
 export const getGroupMessage = async (req, res) => {
   try {
     const groupId = req.params.groupId;
+    const userId = req.id;
 
     const group = await Group.findById(groupId);
     if (!group) {
       return res.status(404).json({ error: "Group not found" });
+    }
+
+    if (!group.members.includes(userId)) {
+      return res
+        .status(403)
+        .json({ error: "You are not a member of this group" });
     }
 
     let conversation = await Conversation.findOne({
@@ -157,16 +164,10 @@ export const getGroupMessage = async (req, res) => {
     });
 
     if (!conversation) {
-      await Conversation.create({
-        participants: group.members,
-        groupId: group._id,
-        isGroup: true,
-        messages: [],
-      });
       return res.status(200).json([]);
     }
 
-    const messagesWithEmojis = await Conversation.aggregate(
+    const messagesWithEmojis = await Message.aggregate(
       getConversationMessagesAgg(conversation._id),
     );
 
@@ -191,10 +192,6 @@ export const deleteMessage = async (req, res) => {
     const conversation = await Conversation.findOne({ messages: messageId });
     const isGroup = conversation?.isGroup;
 
-    await Conversation.updateOne(
-      { messages: messageId },
-      { $pull: { messages: messageId } },
-    );
 
     await Message.findByIdAndDelete(messageId);
 
@@ -285,7 +282,9 @@ export const editMessage = async (req, res) => {
     }
 
     // 5️⃣ SOCKET LOGIC (UNCHANGED)
-    const conversation = await Conversation.findOne({ messages: messageId });
+    const message = await Message.findById(messageId);
+
+    const conversation = await Conversation.findById(message.conversationId);
     const isGroup = conversation?.isGroup;
 
     if (isGroup) {

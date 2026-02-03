@@ -164,6 +164,7 @@ export const removeMemberFromGroup = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const addMembersToGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
