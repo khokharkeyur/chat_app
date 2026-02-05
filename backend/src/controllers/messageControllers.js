@@ -10,7 +10,7 @@ import {
 import {
   getConversationMessagesAgg,
   getMessageWithEmojisAgg,
-} from "../aggregations/messageAggragations.js";
+} from "../aggregations/messageAggregations.js";
 
 export const sendMessage = async (req, res) => {
   try {
