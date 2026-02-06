@@ -42,7 +42,7 @@ function SendInput({ mobileWidth }) {
       } else {
         res = await axiosInterceptors.post(
           `/message/send/${selectedUser?._id}`,
-          { message, type }
+          { message, type },
         );
 
         dispatch(setMessages([...messages, res?.data?.newMessage]));

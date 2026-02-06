@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import useGetOtherUsers from "../../../../hooks/useGetOtherUsers";
 import axiosInterceptors from "../../axiosInterceptors";
 import toast from "react-hot-toast";
-import CommanGroupModal from "../../../../comman/CommanGroupModal";
+import CommanGroupModal from "../../../../comman/GroupModal";
 import DialogWrapper from "../../../../comman/DialogWrapper";
 import useGetRealTimeEvents from "../../../../hooks/useGetRealTimeEvents";
 import useGetGroups from "../../../../hooks/usegetGroups";
@@ -150,14 +150,14 @@ function Message({ mobileWidth }) {
                   <div className="modal-action">
                     <form method="dialog" className="w-full flex">
                       <div className="w-full flex gap-4">
-                        <p
+                        <button
                           className="btn text-red-500"
                           onClick={() => handleBlockUser(selectedUser?._id)}
                           disabled={isBlocking}
                         >
                           Block
-                        </p>
-                        <p className="btn text-red-500">Report</p>
+                        </button>
+                        <button className="btn text-red-500">Report</button>
                       </div>
                       <button
                         className="btn flex justify-end"

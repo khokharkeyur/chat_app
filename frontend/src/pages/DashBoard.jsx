@@ -70,7 +70,7 @@ function Dashboard() {
 
   const handleUnBlock = async (userId) => {
     try {
-      const response = await axiosInterceptors.put("/user/unBlock", { userId });
+      const response = await axiosInterceptors.put("/user/unblock", { userId });
 
       if (response.status === 200) {
         setBlockedUsers((prev) => prev.filter((user) => user._id !== userId));
@@ -78,7 +78,7 @@ function Dashboard() {
     } catch (error) {
       console.error(
         "Error unblocking user:",
-        error.response?.data?.message || error.message
+        error.response?.data?.message || error.message,
       );
     }
   };
