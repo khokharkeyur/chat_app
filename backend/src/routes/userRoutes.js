@@ -27,7 +27,7 @@ router.get("/admin/:id", getAdminDetails);
 router.put("/profile/update", upload.single("image"), updateProfile);
 router.put("/resetPassword", resetPassword);
 router.put("/block", blockUser);
-router.put("/unBlock", unblockUser);
+router.put("/unblock", unblockUser);
 router.get("/blockedUsers", getBlockedUsers);
 router.post("/sendOtp", sendOtp);
 router.post("/verifyOtp", verifyOtp);
