@@ -16,7 +16,7 @@ const BlockedUserDialog = ({ blockedUsers, onClose, handleUnBlock }) => {
                 <img
                   src={user.profilePhoto}
                   alt={user.fullName}
-                  className="mr-4 w-12"
+                  className="mr-4 w-12 rounded-full"
                 />
                 <p className="pt-2 pb-4">{user.fullName}</p>
               </div>
