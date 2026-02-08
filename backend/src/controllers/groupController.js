@@ -106,7 +106,11 @@ export const removeMemberFromGroup = async (req, res) => {
           .json({ message: "Admin cannot remove himself from the group" });
       }
 
-      if (!group.members.includes(memberId)) {
+      if (
+        !group.members.some(
+          (member) => member.toString() === memberId.toString(),
+        )
+      ) {
         return res.status(400).json({ message: "User is not a group member" });
       }
 
@@ -114,7 +118,9 @@ export const removeMemberFromGroup = async (req, res) => {
         (member) => member.toString() !== memberId.toString(),
       );
     } else {
-      if (!group.members.includes(userId)) {
+      if (
+        !group.members.some((member) => member.toString() === userId.toString())
+      ) {
         return res
           .status(400)
           .json({ message: "You are not a member of this group" });
