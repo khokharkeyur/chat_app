@@ -3,10 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import firebase from "../config/firebase.config.js";
 import { SMTPClient } from "emailjs";
-import { Message } from "../models/messageModel.js";
 import { getLastMessageBetweenUsers } from "../utils/lastMessage.js";
-
-const OTP_STORAGE = {};
 
 const client = new SMTPClient({
   user: process.env.USER_EMAIL,
@@ -52,7 +49,8 @@ export const register = async (req, res) => {
       await fileRef.put(req.file.buffer);
       profilePhoto = await fileRef.getDownloadURL();
     } else {
-      profilePhoto = `https://ui-avatars.com/api/?name=${username}&background=random`;
+      const avatarColor = getColorFromString(username);
+      profilePhoto = `https://ui-avatars.com/api/?name=${username}&background=${avatarColor}&color=ffffff`;
     }
     await User.create({
       fullName,

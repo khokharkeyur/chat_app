@@ -1,7 +1,7 @@
 import { Group } from "../models/groupModel.js";
-import { Message } from "../models/messageModel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 import { getLastMessageForGroup } from "../utils/lastMessage.js";
+import { getColorFromString } from "../utils/utils.js";
 
 export const createGroup = async (req, res) => {
   try {
@@ -18,7 +18,8 @@ export const createGroup = async (req, res) => {
     if (existingGroup) {
       return res.status(400).json({ message: "Group name already exists" });
     }
-    const groupProfilePhoto = `https://ui-avatars.com/api/?name=${groupName}&background=random`;
+    const avatarColor = getColorFromString(groupName);
+    const groupProfilePhoto = `https://ui-avatars.com/api/?name=${groupName}&background=${avatarColor}&color=ffffff`;
     const newGroup = await Group.create({
       name: groupName,
       members: memberIds,
