@@ -3,10 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import firebase from "../config/firebase.config.js";
 import { SMTPClient } from "emailjs";
-import { Message } from "../models/messageModel.js";
 import { getLastMessageBetweenUsers } from "../utils/lastMessage.js";
-
-const OTP_STORAGE = {};
 
 const client = new SMTPClient({
   user: process.env.USER_EMAIL,
@@ -52,7 +49,8 @@ export const register = async (req, res) => {
       await fileRef.put(req.file.buffer);
       profilePhoto = await fileRef.getDownloadURL();
     } else {
-      profilePhoto = `https://ui-avatars.com/api/?name=${username}&background=random`;
+      const avatarColor = getColorFromString(username);
+      profilePhoto = `https://ui-avatars.com/api/?name=${username}&background=${avatarColor}&color=ffffff`;
     }
     await User.create({
       fullName,
@@ -215,6 +213,7 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -247,6 +246,7 @@ export const logout = (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 export const getOtherUsers = async (req, res) => {
@@ -280,7 +280,7 @@ export const getOtherUsers = async (req, res) => {
     return res.status(200).json(usersWithLastMessage);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -306,7 +306,7 @@ export const getAdminDetails = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -338,7 +338,7 @@ export const blockUser = async (req, res) => {
     res.status(200).json({ message: "User blocked successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -360,7 +360,7 @@ export const getBlockedUsers = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -386,7 +386,7 @@ export const unblockUser = async (req, res) => {
     res.status(200).json({ message: "User unblocked successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -427,7 +427,7 @@ export const sendOtp = async (req, res) => {
     });
   } catch (error) {
     console.error("Error sending OTP:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -436,9 +436,7 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     if (!email || !otp) {
-      return res
-        .status(400)
-        .json({ message: "Phone number and OTP are required" });
+      return res.status(400).json({ message: "Email and OTP are required" });
     }
     const user = await User.findOne({ email });
     if (!user || !user.otp) {
@@ -459,6 +457,6 @@ export const verifyOtp = async (req, res) => {
     });
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };

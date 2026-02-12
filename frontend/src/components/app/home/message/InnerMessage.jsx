@@ -92,7 +92,6 @@ function InnerMessage({ message, onDelete }) {
   const id = open ? "message-popup" : undefined;
 
   const isEditing = editMessage?._id === message._id;
-
   return (
     <div
       ref={chatRef}
@@ -107,7 +106,7 @@ function InnerMessage({ message, onDelete }) {
                 ? authUser?.profilePhoto
                 : selectedUser?.members
                   ? selectedUser.members.find(
-                      (member) => member._id === message?.senderId
+                      (member) => member._id === message?.senderId,
                     )?.profilePhoto
                   : selectedUser?.profilePhoto
             }

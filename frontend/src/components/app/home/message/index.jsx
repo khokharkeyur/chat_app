@@ -17,7 +17,7 @@ function Message({ mobileWidth }) {
   useGetGroups();
 
   const { selectedUser, authUser, otherUsers } = useSelector(
-    (store) => store.user
+    (store) => store.user,
   );
   useGetOtherUsers();
   const [groupMember, setGroupMember] = React.useState([]);
@@ -26,9 +26,7 @@ function Message({ mobileWidth }) {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
   const authUserId = authUser?._id;
-  function viewProfile() {
-    if (!otherUsers) return;
-  }
+
   const dispatch = useDispatch();
   const handleBlockUser = async (userId) => {
     if (isBlocking) return;
@@ -46,7 +44,7 @@ function Message({ mobileWidth }) {
     } catch (error) {
       console.error(
         "Error blocking user:",
-        error.response?.data?.message || error.message
+        error.response?.data?.message || error.message,
       );
     } finally {
       setIsBlocking(false);
@@ -109,12 +107,12 @@ function Message({ mobileWidth }) {
               <button
                 className="w-full flex items-center cursor-pointer gap-2"
                 onClick={() => {
+                  debugger;
                   if (
                     !selectedUser.members ||
                     selectedUser.members.length === 0
                   ) {
                     document.getElementById("view_profile").showModal();
-                    viewProfile();
                   }
                 }}
               >
@@ -127,50 +125,6 @@ function Message({ mobileWidth }) {
                 </div>
                 <p>{selectedUser?.fullName || selectedUser?.name}</p>
               </button>
-              <DialogWrapper id="view_profile">
-                <div>
-                  {selectedUser && (
-                    <div className="flex flex-col justify-center items-center">
-                      <img
-                        src={selectedUser?.profilePhoto}
-                        alt=""
-                        className="w-20 h-20 rounded-full"
-                      />
-                      <p>{selectedUser?.fullName}</p>
-                      <div className="flex gap-3 mt-3">
-                        <p className="font-semibold text-xl">username:</p>
-                        <p className="text-xl">{selectedUser?.username}</p>
-                      </div>
-                      <div className="flex gap-3 mt-3">
-                        <p className="font-semibold text-xl">gender:</p>
-                        <p className="text-xl">{selectedUser?.gender}</p>
-                      </div>
-                    </div>
-                  )}
-                  <div className="modal-action">
-                    <form method="dialog" className="w-full flex">
-                      <div className="w-full flex gap-4">
-                        <button
-                          className="btn text-red-500"
-                          onClick={() => handleBlockUser(selectedUser?._id)}
-                          disabled={isBlocking}
-                        >
-                          Block
-                        </button>
-                        <button className="btn text-red-500">Report</button>
-                      </div>
-                      <button
-                        className="btn flex justify-end"
-                        onClick={() => {
-                          setGroupMember([]);
-                        }}
-                      >
-                        Close
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </DialogWrapper>
             </div>
             <div className="flex flex-col flex-1">
               <div className="flex gap-2 flex-1 justify-end">
@@ -206,6 +160,50 @@ function Message({ mobileWidth }) {
           <h1 className="text-2xl ">Let's start conversation</h1>
         </div>
       )}
+      <DialogWrapper id="view_profile">
+        <div>
+          {selectedUser && (
+            <div className="flex flex-col justify-center items-center">
+              <img
+                src={selectedUser?.profilePhoto}
+                alt=""
+                className="w-20 h-20 rounded-full"
+              />
+              <p>{selectedUser?.fullName}</p>
+              <div className="flex gap-3 mt-3">
+                <p className="font-semibold text-xl">username:</p>
+                <p className="text-xl">{selectedUser?.username}</p>
+              </div>
+              <div className="flex gap-3 mt-3">
+                <p className="font-semibold text-xl">gender:</p>
+                <p className="text-xl">{selectedUser?.gender}</p>
+              </div>
+            </div>
+          )}
+          <div className="modal-action">
+            <form method="dialog" className="w-full flex">
+              <div className="w-full flex gap-4">
+                <button
+                  className="btn text-red-500"
+                  onClick={() => handleBlockUser(selectedUser?._id)}
+                  disabled={isBlocking}
+                >
+                  Block
+                </button>
+                <button className="btn text-red-500">Report</button>
+              </div>
+              <button
+                className="btn flex justify-end"
+                onClick={() => {
+                  setGroupMember([]);
+                }}
+              >
+                Close
+              </button>
+            </form>
+          </div>
+        </div>
+      </DialogWrapper>
     </>
   );
 }

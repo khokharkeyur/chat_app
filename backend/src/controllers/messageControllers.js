@@ -152,7 +152,7 @@ export const getGroupMessage = async (req, res) => {
       return res.status(404).json({ error: "Group not found" });
     }
 
-    if (!group.members.includes(userId)) {
+    if (!group.members.includes(userId.toString())) {
       return res
         .status(403)
         .json({ error: "You are not a member of this group" });
@@ -189,9 +189,8 @@ export const deleteMessage = async (req, res) => {
 
     await Emoji.deleteMany({ messageId });
 
-    const conversation = await Conversation.findOne({ messages: messageId });
+    const conversation = await Conversation.findById(message.conversationId);
     const isGroup = conversation?.isGroup;
-
 
     await Message.findByIdAndDelete(messageId);
 
