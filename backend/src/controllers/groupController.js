@@ -60,10 +60,6 @@ export const deleteGroup = async (req, res) => {
     if (!deletedGroup) {
       return res.status(404).json({ message: "Group not found" });
     }
-    const populatedGroup = await Group.findById(id).populate({
-      path: "members",
-      select: "-password -blockedUsers -__v",
-    });
     deletedGroup.members.forEach((memberId) => {
       const memberSocketId = getReceiverSocketId(memberId.toString());
       if (memberSocketId) {

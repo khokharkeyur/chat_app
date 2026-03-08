@@ -329,7 +329,11 @@ export const blockUser = async (req, res) => {
     if (loggedInUserId === userId) {
       return res.status(400).json({ message: "You cannot block yourself" });
     }
-    if (loggedInUser.blockedUsers.includes(userId)) {
+    if (
+      loggedInUser.blockedUsers.some(
+        (blockedUserId) => blockedUserId.toString() === userId.toString(),
+      )
+    ) {
       return res.status(400).json({ message: "User is already blocked" });
     }
     loggedInUser.blockedUsers.push(userId);
@@ -375,7 +379,11 @@ export const unblockUser = async (req, res) => {
 
     const loggedInUser = await User.findById(loggedInUserId);
 
-    if (!loggedInUser.blockedUsers.includes(userId)) {
+    if (
+      !loggedInUser.blockedUsers.some(
+        (blockedUserId) => blockedUserId.toString() === userId.toString(),
+      )
+    ) {
       return res.status(400).json({ message: "User is not blocked" });
     }
     loggedInUser.blockedUsers = loggedInUser.blockedUsers.filter(

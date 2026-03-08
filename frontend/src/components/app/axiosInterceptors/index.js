@@ -29,7 +29,9 @@ axiosInterceptors.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 401 &&
-      error.response.data.message === "User not authenticated." &&
+      ["User not authenticated.", "Invalid token."].includes(
+        error.response?.data?.message,
+      ) &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
