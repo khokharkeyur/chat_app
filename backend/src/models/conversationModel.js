@@ -11,6 +11,8 @@ const conversationModel = new mongoose.Schema(
 
     isGroup: { type: Boolean, default: false },
     groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
+    lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
+    lastMessageTime: { type: Date },
   },
   { timestamps: true },
 );

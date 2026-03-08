@@ -42,6 +42,7 @@ export const sendMessage = async (req, res) => {
         senderId,
         conversationId: gotConversation._id,
         receiverId,
+        receiverModel: "Group",
         message,
       });
 
@@ -81,10 +82,12 @@ export const sendMessage = async (req, res) => {
         conversationId: gotConversation._id,
         senderId,
         receiverId,
+        receiverModel: "User",
         message,
       });
 
       gotConversation.lastMessage = newMessage._id;
+      gotConversation.lastMessageTime = newMessage.createdAt;
       await gotConversation.save();
 
       const lastMessage = await getLastMessageBetweenUsers(
@@ -152,7 +155,9 @@ export const getGroupMessage = async (req, res) => {
       return res.status(404).json({ error: "Group not found" });
     }
 
-    if (!group.members.includes(userId.toString())) {
+    if (
+      !group.members.some((member) => member.toString() === userId.toString())
+    ) {
       return res
         .status(403)
         .json({ error: "You are not a member of this group" });

@@ -15,7 +15,12 @@ const messageModel = new mongoose.Schema(
     },
     receiverId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      refPath: "receiverModel",
+      required: true,
+    },
+    receiverModel: {
+      type: String,
+      enum: ["User", "Group"],
       required: true,
     },
     message: {
