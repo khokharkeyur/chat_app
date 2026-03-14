@@ -54,7 +54,7 @@ function InnerMessage({ message, onDelete }) {
   };
   const handleDelete = async () => {
     try {
-      onDelete(message._id);
+      await onDelete(message._id);
     } catch (error) {
       console.error("Error deleting message:", error);
     }

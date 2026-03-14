@@ -1,10 +1,8 @@
 import React from "react";
 import InnerMessage from "./InnerMessage";
 import useGetMessages from "../../../../hooks/useGetMessages";
-import { useSelector, useDispatch } from "react-redux";
-import useGetRealTimeMessage from "../../../../hooks/useGetRealTimeEvents";
+import { useSelector } from "react-redux";
 import axiosInterceptors from "../../axiosInterceptors/index";
-import { useSocket } from "../../../../config/SocketContext";
 
 function ManyMessage() {
   useGetMessages();
