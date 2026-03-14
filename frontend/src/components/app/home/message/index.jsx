@@ -107,7 +107,6 @@ function Message({ mobileWidth }) {
               <button
                 className="w-full flex items-center cursor-pointer gap-2"
                 onClick={() => {
-                  debugger;
                   if (
                     !selectedUser.members ||
                     selectedUser.members.length === 0
