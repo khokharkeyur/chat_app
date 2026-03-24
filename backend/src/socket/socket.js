@@ -37,7 +37,7 @@ io.on("connection", (socket) => {
           });
           updatedMessage = await Message.findById(messageId).populate(
             "emoji.sender",
-            "username profilePhoto"
+            "username profilePhoto",
           );
         } else if (emoji && emojiSender) {
           await Message.findByIdAndUpdate(messageId, {
@@ -48,13 +48,13 @@ io.on("connection", (socket) => {
           });
           updatedMessage = await Message.findById(messageId).populate(
             "emoji.sender",
-            "username profilePhoto"
+            "username profilePhoto",
           );
         } else if (newContent?.trim()) {
           updatedMessage = await Message.findByIdAndUpdate(
             messageId,
             { message: newContent },
-            { new: true }
+            { new: true },
           );
         }
 
@@ -62,14 +62,14 @@ io.on("connection", (socket) => {
           io.emit("messageUpdated", updatedMessage);
         }
       } catch (error) {
-        console.error("Error updating message:", error);
+        // Error updating message
       }
-    }
+    },
   );
 
   socket.on("joinGroup", (groupId) => {
     socket.join(groupId);
-    console.log(`User ${userId} joined group ${groupId}`);
+    // User joined group
   });
 
   socket.on("disconnect", () => {

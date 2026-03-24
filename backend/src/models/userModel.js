@@ -30,11 +30,19 @@ const userModel = new mongoose.Schema(
     },
     email: {
       type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      lowercase: true,
+    },
+    refreshToken: {
+      type: String,
+      default: null,
     },
     otp: { type: String },
-    otpExpireAt: { type: Date }
+    otpExpireAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = mongoose.model("User", userModel);

@@ -115,7 +115,6 @@ export const sendMessage = async (req, res) => {
 
     return res.status(201).json({ newMessage });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: "Server error" });
   }
 };
@@ -140,7 +139,6 @@ export const getMessage = async (req, res) => {
 
     return res.status(200).json(messagesWithEmojis);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Failed to get messages" });
   }
 };
@@ -178,7 +176,6 @@ export const getGroupMessage = async (req, res) => {
 
     res.status(200).json(messagesWithEmojis);
   } catch (error) {
-    console.error("Error in getGroupMessage:", error);
     res.status(500).json({ error: "Failed to get group messages" });
   }
 };
@@ -240,7 +237,6 @@ export const deleteMessage = async (req, res) => {
 
     return res.status(200).json({ message: "Message deleted successfully" });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: "Server error" });
   }
 };
@@ -338,7 +334,6 @@ export const editMessage = async (req, res) => {
 
     return res.status(200).json({ updatedMessage });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: "Server error" });
   }
 };

@@ -14,10 +14,8 @@ const isAuthenticated = async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      console.error("Token expired at:", error.expiredAt);
       return res.status(401).json({ message: "Invalid token." });
     }
-    console.error("Authentication error:", error);
     return res.status(500).json({ message: "Internal server error." });
   }
 };
