@@ -44,7 +44,6 @@ export const createGroup = async (req, res) => {
       group: newGroup,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -72,7 +71,6 @@ export const deleteGroup = async (req, res) => {
       group: deletedGroup,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -163,7 +161,6 @@ export const removeMemberFromGroup = async (req, res) => {
       group: populatedGroup,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -225,7 +222,6 @@ export const addMembersToGroup = async (req, res) => {
       group: populatedGroup,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -253,7 +249,6 @@ export const getAllGroups = async (req, res) => {
       groups: groupsWithLastMessage,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
