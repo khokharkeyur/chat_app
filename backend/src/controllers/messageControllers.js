@@ -22,14 +22,28 @@ export const sendMessage = async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
+    const isGroupMessage = type === "group";
     const group = await Group.findById(receiverId);
+    const isExistingGroup = !!group;
     let newMessage;
 
-    let gotConversation = await Conversation.findOne({
-      groupId: receiverId,
-    });
+    if (isGroupMessage && !isExistingGroup) {
+      return res.status(404).json({ error: "Group not found" });
+    }
 
-    if (group && type === "group") {
+    if (!isGroupMessage && isExistingGroup) {
+      return res
+        .status(400)
+        .json({
+          error: "Invalid receiver type for group id. Use type 'group'",
+        });
+    }
+
+    if (isGroupMessage) {
+      let gotConversation = await Conversation.findOne({
+        groupId: receiverId,
+      });
+
       if (!gotConversation) {
         gotConversation = await Conversation.create({
           participants: group.members,
