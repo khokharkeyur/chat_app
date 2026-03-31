@@ -294,6 +294,7 @@ export const getOtherUsers = async (req, res) => {
 
     const otherUsers = await User.find({
       _id: { $ne: loggedInUserId, $nin: blockedUsers },
+      blockedUsers: { $ne: loggedInUserId },
     }).select("-password");
 
     const usersWithLastMessage = await Promise.all(

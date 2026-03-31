@@ -181,10 +181,21 @@ export const addMembersToGroup = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
 
+    // Only admin can add new members
+    if (group.admin.toString() !== req.id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Only group admin can add members" });
+    }
+
     // Add only new members (avoid duplicates)
-    const newMembers = memberIds.filter(
-      (id) => !group.members.map((m) => m.toString()).includes(id),
-    );
+    const existingMemberIds = new Set(group.members.map((m) => m.toString()));
+    const newMembers = memberIds.filter((id) => !existingMemberIds.has(id));
+
+    if (newMembers.length === 0) {
+      return res.status(400).json({ message: "No new members to add" });
+    }
+
     group.members.push(...newMembers);
 
     await group.save();
