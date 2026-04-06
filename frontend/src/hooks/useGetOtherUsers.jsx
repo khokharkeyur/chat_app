@@ -14,7 +14,7 @@ function useGetOtherUsers() {
         dispatch(setOtherUsers(res.data));
         setData(res.data);
       } catch (error) {
-        console.log(error);
+        // API error fetching other users
       }
     };
     fetchOtherUser();

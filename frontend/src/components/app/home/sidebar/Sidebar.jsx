@@ -64,7 +64,7 @@ function Sidebar({ mobileWidth }) {
       dispatch(setSelectedUser(null));
       dispatch(setAuthUser(null));
     } catch (error) {
-      console.log(error);
+      toast.error("Logout failed");
     }
   };
 

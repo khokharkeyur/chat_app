@@ -28,7 +28,7 @@ function SignupForm() {
       .max(50, "Full Name must not exceed 50 characters")
       .matches(
         /^[A-Za-z\s]+$/,
-        "Full Name must contain only letters and spaces"
+        "Full Name must contain only letters and spaces",
       )
       .required("Full Name is required"),
 
@@ -38,7 +38,7 @@ function SignupForm() {
       .max(20, "Username must not exceed 20 characters")
       .matches(
         /^[a-zA-Z0-9._]+$/,
-        "Username can only contain letters, numbers, dots, and underscores"
+        "Username can only contain letters, numbers, dots, and underscores",
       )
       .required("Username is required"),
     ...(adminDetails
@@ -60,6 +60,7 @@ function SignupForm() {
   const onSubmit = async (values, { resetForm }) => {
     if (loading) return;
     setLoading(true);
+    let success = false;
     try {
       const formData = new FormData();
       formData.append("fullName", values.fullName);
@@ -89,13 +90,13 @@ function SignupForm() {
         } else {
           navigate("/login");
         }
+        success = true;
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
-      console.log(error);
     } finally {
       setLoading(false);
-      resetForm();
+      if (success) resetForm();
     }
   };
 
