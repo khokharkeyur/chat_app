@@ -57,7 +57,7 @@ function SendInput({ mobileWidth }) {
         });
       }
     } catch (error) {
-      console.log(error);
+      // Send message error
     }
     setMessage("");
   };

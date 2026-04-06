@@ -44,7 +44,7 @@ function Dashboard() {
         const res = await axiosInterceptors.get(`/user/admin/${authUser._id}`);
         setAdminDetails(res?.data);
       } catch (error) {
-        console.log(error);
+        toast.error("Failed to load admin details");
       }
     };
 

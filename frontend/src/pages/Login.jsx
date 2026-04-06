@@ -14,7 +14,7 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { width } = useWindowSize();
-  const mobileWidth = getMobileWidth(width);
+  const mobileWidth = React.useMemo(() => getMobileWidth(width), [width]);
   const [loading, setLoading] = useState(false);
 
   const initialValues = {
@@ -30,6 +30,7 @@ const Login = () => {
   const onSubmit = async (values, { resetForm }) => {
     if (loading) return;
     setLoading(true);
+    let success = false;
     try {
       const res = await axiosInterceptors.post("/user/login", values);
       const { token, refreshToken, ...userData } = res.data;
@@ -37,12 +38,12 @@ const Login = () => {
       Cookies.set("RefreshToken", refreshToken, { expires: 7, path: "/" });
       dispatch(setAuthUser(userData));
       navigate("/");
+      success = true;
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
-      console.log(error);
     } finally {
       setLoading(false);
-      resetForm();
+      if (success) resetForm();
     }
   };
 
