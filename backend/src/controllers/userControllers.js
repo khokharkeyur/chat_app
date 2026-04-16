@@ -277,7 +277,6 @@ export const logout = async (req, res) => {
 
     return res
       .status(200)
-      .cookie("token", "", { maxAge: 0 })
       .json({ message: "Logged out successfully." });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
@@ -477,7 +476,7 @@ export const verifyOtp = async (req, res) => {
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
     }
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user || !user.otp) {
       return res.status(400).json({ message: "OTP not found" });
     }
