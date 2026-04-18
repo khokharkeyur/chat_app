@@ -86,7 +86,7 @@ export const register = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { fullName, username, gender, adminId } = req.body;
+    const { fullName, username, gender, adminId, email } = req.body;
 
     if (!fullName || !username || !gender) {
       return res.status(400).json({ message: "All fields are required" });
@@ -97,9 +97,43 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const normalizedUsername = username.trim();
+    const existingUsername = await User.findOne({
+      username: normalizedUsername,
+      _id: { $ne: adminId },
+    });
+    if (existingUsername) {
+      return res
+        .status(400)
+        .json({ message: "Username already exists, try a different one" });
+    }
+
+    let normalizedEmail;
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      normalizedEmail = email.toLowerCase().trim();
+
+      if (!emailRegex.test(normalizedEmail)) {
+        return res.status(400).json({ message: "Please enter a valid email" });
+      }
+
+      const existingEmail = await User.findOne({
+        email: normalizedEmail,
+        _id: { $ne: adminId },
+      });
+      if (existingEmail) {
+        return res
+          .status(400)
+          .json({ message: "Email already exists, try a different one" });
+      }
+    }
+
     user.fullName = fullName;
-    user.username = username;
+    user.username = normalizedUsername;
     user.gender = gender;
+    if (normalizedEmail) {
+      user.email = normalizedEmail;
+    }
     if (req.file) {
       if (
         user.profilePhoto &&

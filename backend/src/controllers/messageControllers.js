@@ -32,11 +32,9 @@ export const sendMessage = async (req, res) => {
     }
 
     if (!isGroupMessage && isExistingGroup) {
-      return res
-        .status(400)
-        .json({
-          error: "Invalid receiver type for group id. Use type 'group'",
-        });
+      return res.status(400).json({
+        error: "Invalid receiver type for group id. Use type 'group'",
+      });
     }
 
     if (isGroupMessage) {
@@ -197,10 +195,17 @@ export const getGroupMessage = async (req, res) => {
 export const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
+    const requesterId = req.id;
 
     const message = await Message.findById(messageId);
     if (!message) {
       return res.status(404).json({ error: "Message not found" });
+    }
+
+    if (message.senderId.toString() !== requesterId.toString()) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to delete this message" });
     }
 
     await Emoji.deleteMany({ messageId });
