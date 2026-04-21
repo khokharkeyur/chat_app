@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import firebase from "../config/firebase.config.js";
 import { SMTPClient } from "emailjs";
 import { getLastMessageBetweenUsers } from "../utils/lastMessage.js";
+import { getColorFromString } from "../utils/utils.js";
 
 const client = new SMTPClient({
   user: process.env.USER_EMAIL,
@@ -80,6 +81,7 @@ export const register = async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.log("error :", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -309,9 +311,7 @@ export const logout = async (req, res) => {
       await User.findByIdAndUpdate(userId, { refreshToken: null });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Logged out successfully." });
+    return res.status(200).json({ message: "Logged out successfully." });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
