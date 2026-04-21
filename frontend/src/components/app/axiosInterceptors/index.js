@@ -17,7 +17,7 @@ axiosInterceptors.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 axiosInterceptors.interceptors.response.use(
@@ -39,7 +39,6 @@ axiosInterceptors.interceptors.response.use(
       try {
         const refreshToken = Cookies.get("RefreshToken");
         if (!refreshToken) {
-          console.error("Refresh token missing. Redirecting to login...");
           Cookies.remove("AccessToken");
           Cookies.remove("RefreshToken");
           window.location.href = "/login";
@@ -51,12 +50,18 @@ axiosInterceptors.interceptors.response.use(
         });
 
         const newAccessToken = response.data.accessToken;
-        Cookies.set("AccessToken", newAccessToken, { expires: 1 });
+        const newRefreshToken = response.data.refreshToken;
+        Cookies.set("AccessToken", newAccessToken, { expires: 1, path: "/" });
+        if (newRefreshToken) {
+          Cookies.set("RefreshToken", newRefreshToken, {
+            expires: 7,
+            path: "/",
+          });
+        }
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return axiosInterceptors(originalRequest);
       } catch (refreshError) {
-        console.error("Error refreshing token:", refreshError);
         Cookies.remove("AccessToken");
         Cookies.remove("RefreshToken");
         window.location.href = "/login";
@@ -65,7 +70,7 @@ axiosInterceptors.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInterceptors;
