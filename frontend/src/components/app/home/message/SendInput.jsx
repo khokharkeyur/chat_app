@@ -8,7 +8,7 @@ import { useSocket } from "../../../../config/SocketContext";
 function SendInput({ mobileWidth }) {
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
-  const { authUser, selectedUser } = useSelector((store) => store.user);
+  const { selectedUser } = useSelector((store) => store.user);
   const { messages, editMessage } = useSelector((store) => store.message);
   const socket = useSocket();
 
@@ -46,15 +46,6 @@ function SendInput({ mobileWidth }) {
         );
 
         dispatch(setMessages([...messages, res?.data?.newMessage]));
-      }
-
-      if (isGroup && res?.data?.newMessage) {
-        selectedUser.members.forEach((member) => {
-          if (member._id !== authUser._id) {
-            const data = { ...res.data.newMessage };
-            socket.emit("newMessage", member._id, data);
-          }
-        });
       }
     } catch (error) {
       // Send message error
