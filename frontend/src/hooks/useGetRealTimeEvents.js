@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setMessages } from "../redux/messageSlice";
 import {
@@ -13,42 +13,68 @@ import { useSocket } from "../config/SocketContext";
 
 const useGetRealTimeEvents = () => {
   const socket = useSocket();
-  const { messages } = useSelector((store) => store.message);
   const { groups, selectedUser } = useSelector((store) => store.user);
   const dispatch = useDispatch();
+
+  const groupsRef = useRef(groups || []);
+  const selectedUserRef = useRef(selectedUser);
+
+  useEffect(() => {
+    groupsRef.current = groups || [];
+  }, [groups]);
+
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
 
   useEffect(() => {
     if (socket) {
       socket.on("newMessage", (newMessage) => {
+        const currentSelectedUser = selectedUserRef.current;
         if (
           newMessage.type === "group" &&
-          selectedUser &&
-          selectedUser._id === newMessage.groupId
+          currentSelectedUser &&
+          currentSelectedUser._id === newMessage.groupId
         ) {
           dispatch(setMessages((prev) => [...(prev || []), newMessage]));
         } else if (
           newMessage.type === "user" &&
-          selectedUser &&
-          (selectedUser._id === newMessage.senderId ||
-            selectedUser._id === newMessage.receiverId)
+          currentSelectedUser &&
+          (currentSelectedUser._id === newMessage.senderId ||
+            currentSelectedUser._id === newMessage.receiverId)
         ) {
           dispatch(setMessages((prev) => [...(prev || []), newMessage]));
         }
       });
 
       socket.on("messageUpdated", (updatedMessage) => {
-        const updatedMessages = messages?.map((msg) =>
-          msg._id === updatedMessage._id ? updatedMessage : msg
+        dispatch(
+          setMessages((prev) =>
+            (prev || []).map((msg) =>
+              msg._id === updatedMessage._id ? updatedMessage : msg,
+            ),
+          ),
         );
-        dispatch(setMessages(updatedMessages));
       });
 
       socket.on("deleteMessage", ({ messageId }) => {
-        dispatch(setMessages(messages.filter((msg) => msg._id !== messageId)));
+        dispatch(
+          setMessages((prev) =>
+            (prev || []).filter((msg) => msg._id !== messageId),
+          ),
+        );
       });
 
       socket.on("groupCreated", (newGroup) => {
-        dispatch(setGroups([...(groups || []), newGroup]));
+        const existingGroups = groupsRef.current || [];
+        const alreadyExists = existingGroups.some(
+          (group) => group._id === newGroup._id,
+        );
+        const nextGroups = alreadyExists
+          ? existingGroups
+          : [...existingGroups, newGroup];
+        groupsRef.current = nextGroups;
+        dispatch(setGroups(nextGroups));
       });
 
       socket.on("lastMessageUpdated", (payload) => {
@@ -57,14 +83,14 @@ const useGetRealTimeEvents = () => {
             updateGroupLastMessage({
               groupId: payload.groupId,
               lastMessage: payload.lastMessage,
-            })
+            }),
           );
         } else if (payload.userId) {
           dispatch(
             updateUserLastMessage({
               userId: payload.userId,
               lastMessage: payload.lastMessage,
-            })
+            }),
           );
         }
       });
@@ -72,8 +98,8 @@ const useGetRealTimeEvents = () => {
         dispatch(removeGroup(groupId));
       });
 
-      socket.on("memberAdded", ({ memberId, updatedGroup }) => {
-        const oldGroups = groups || [];
+      socket.on("memberAdded", ({ updatedGroup }) => {
+        const oldGroups = groupsRef.current || [];
 
         const index = oldGroups.findIndex((g) => g._id === updatedGroup._id);
 
@@ -86,29 +112,32 @@ const useGetRealTimeEvents = () => {
           newGroups = [...oldGroups, updatedGroup];
         }
 
+        groupsRef.current = newGroups;
         dispatch(setGroups(newGroups));
       });
 
       socket.on("groupUpdated", ({ groupId, updatedGroup }) => {
-        const updatedGroups = groups?.map((group) =>
+        const updatedGroups = (groupsRef.current || []).map((group) =>
           group._id === groupId
             ? {
                 ...group,
                 members: updatedGroup?.members,
               }
-            : group
+            : group,
         );
+        groupsRef.current = updatedGroups;
         dispatch(setGroups(updatedGroups));
-        if (selectedUser?._id === groupId) {
+        if (selectedUserRef.current?._id === groupId) {
           dispatch(updateSelectedUser(updatedGroup));
         }
       });
 
-      socket.on("memberRemoved", ({ groupId, memberId }) => {
-        const oldGroups = groups || [];
+      socket.on("memberRemoved", ({ groupId }) => {
+        const oldGroups = groupsRef.current || [];
         const newGroups = oldGroups.filter((g) => g._id !== groupId);
+        groupsRef.current = newGroups;
         dispatch(setGroups(newGroups));
-        if (selectedUser?._id === groupId) {
+        if (selectedUserRef.current?._id === groupId) {
           dispatch(setSelectedUser(null));
         }
       });
@@ -125,7 +154,7 @@ const useGetRealTimeEvents = () => {
       socket?.off("groupUpdated");
       socket?.off("lastMessageUpdated");
     };
-  }, [socket, messages, groups, dispatch]);
+  }, [socket, dispatch]);
 
   return null;
 };

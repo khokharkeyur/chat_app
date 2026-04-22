@@ -33,7 +33,6 @@ const CommanGroupModal = ({
       dispatch(setGroups(updatedGroups));
       toast.success(response.data.message);
     } catch (error) {
-      console.error("Error deleting group:", error);
       const errorMessage =
         error.response?.data?.message || "Failed to delete group";
       toast.error(errorMessage);
@@ -54,7 +53,6 @@ const CommanGroupModal = ({
 
       toast.success(response.data.message);
     } catch (error) {
-      console.error("Error removing member:", error);
       const errorMessage =
         error.response?.data?.message || "Failed to remove member";
       toast.error(errorMessage);
@@ -78,14 +76,14 @@ const CommanGroupModal = ({
     try {
       const res = await axiosInterceptors.post(
         `/group/add-members/${selectedUser._id}`,
-        { memberIds: newMemberIds }
+        { memberIds: newMemberIds },
       );
       toast.success(res.data.message || "Members added!");
       setIsAddMemberMode(false);
       setGroupMember([]);
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Failed to add members to group"
+        error.response?.data?.message || "Failed to add members to group",
       );
     } finally {
       setAddMembersLoading(false);
@@ -103,12 +101,12 @@ const CommanGroupModal = ({
 
   const removeMember = (userToRemove) => {
     setGroupMember((prevGroupMember) =>
-      prevGroupMember.filter((user) => user._id !== userToRemove._id)
+      prevGroupMember.filter((user) => user._id !== userToRemove._id),
     );
   };
 
   const GroupMemberIsAuthUser = selectedUser?.members?.find(
-    (member) => member?.fullName === authUser?.fullName
+    (member) => member?._id === authUser?._id,
   );
 
   return (
@@ -145,7 +143,7 @@ const CommanGroupModal = ({
                       className="mr-4 w-12 rounded-full"
                     />
                     <p className="pt-2 pb-4">
-                      {member?.fullName === GroupMemberIsAuthUser?.fullName
+                      {member?._id === GroupMemberIsAuthUser?._id
                         ? "You"
                         : member?.fullName}
                     </p>
@@ -247,7 +245,7 @@ const CommanGroupModal = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-52 overflow-y-auto">
                   {otherUsers?.map((user) =>
                     groupMember.find(
-                      (member) => member._id === user._id
+                      (member) => member._id === user._id,
                     ) ? null : (
                       <div
                         key={user._id}
@@ -261,7 +259,7 @@ const CommanGroupModal = ({
                         />
                         <span>{user.fullName}</span>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>
@@ -275,14 +273,14 @@ const CommanGroupModal = ({
                         key={user._id}
                         className={`flex items-center gap-3 p-2 rounded-md transition ${
                           selectedUser?.members?.find(
-                            (member) => member._id === user._id
+                            (member) => member._id === user._id,
                           )
                             ? "bg-gray-600 cursor-not-allowed"
                             : "bg-blue-800/40 hover:bg-blue-700/50 cursor-pointer"
                         }`}
                         onClick={() =>
                           selectedUser?.members?.find(
-                            (member) => member._id === user._id
+                            (member) => member._id === user._id,
                           )
                             ? null
                             : removeMember(user)
