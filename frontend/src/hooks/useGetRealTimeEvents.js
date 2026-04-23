@@ -122,6 +122,7 @@ const useGetRealTimeEvents = () => {
             ? {
                 ...group,
                 members: updatedGroup?.members,
+                admin: updatedGroup?.admin,
               }
             : group,
         );
