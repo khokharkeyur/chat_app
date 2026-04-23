@@ -12,7 +12,7 @@ function ManyMessage() {
     try {
       await axiosInterceptors.delete(`/message/delete/${messageId}`);
     } catch (error) {
-      console.error("Error deleting message:", error);
+      // Delete message failed
     }
   };
 

@@ -72,7 +72,6 @@ function ForgotPassword() {
       }
     } catch (error) {
       toast.error("Error sending OTP.");
-      console.error("Send OTP error:", error);
     } finally {
       setLoadingState("sendOtp", false);
     }
@@ -95,7 +94,6 @@ function ForgotPassword() {
       }
     } catch (error) {
       toast.error("Error verifying OTP.");
-      console.error("Verify OTP error:", error);
     } finally {
       setLoadingState("verifyOtp", false);
     }
@@ -124,7 +122,7 @@ function ForgotPassword() {
     try {
       const { data } = await axiosInterceptors.put(
         "/user/resetPassword",
-        payload
+        payload,
       );
       if (data.success) {
         toast.success(data.message);
@@ -135,7 +133,6 @@ function ForgotPassword() {
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Password reset failed.");
-      console.error("Reset Password error:", error);
     } finally {
       setLoadingState("resetPassword", false);
     }

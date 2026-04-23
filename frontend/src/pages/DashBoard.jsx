@@ -57,7 +57,7 @@ function Dashboard() {
       const response = await axiosInterceptors.get("/user/blockedUsers");
       setBlockedUsers(response.data.blockedUsers);
     } catch (error) {
-      console.error("Error fetching blocked users:", error);
+      toast.error("Failed to load blocked users");
     }
   };
 
@@ -77,10 +77,7 @@ function Dashboard() {
         setBlockedUsers((prev) => prev.filter((user) => user._id !== userId));
       }
     } catch (error) {
-      console.error(
-        "Error unblocking user:",
-        error.response?.data?.message || error.message,
-      );
+      toast.error(error.response?.data?.message || "Failed to unblock user");
     }
   };
 

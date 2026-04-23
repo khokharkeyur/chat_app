@@ -56,7 +56,7 @@ function InnerMessage({ message, onDelete }) {
     try {
       await onDelete(message._id);
     } catch (error) {
-      console.error("Error deleting message:", error);
+      // Delete message failed
     }
   };
   const handleEmoji = (messageId) => {
@@ -85,7 +85,7 @@ function InnerMessage({ message, onDelete }) {
         removeEmoji: true,
       });
     } catch (error) {
-      console.error("Error removing emoji reaction:", error);
+      // Remove reaction failed
     }
   };
   const open = Boolean(anchorEl);

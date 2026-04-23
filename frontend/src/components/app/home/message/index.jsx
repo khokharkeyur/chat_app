@@ -42,10 +42,7 @@ function Message({ mobileWidth }) {
         toast.success("User blocked successfully");
       }
     } catch (error) {
-      console.error(
-        "Error blocking user:",
-        error.response?.data?.message || error.message,
-      );
+      toast.error(error.response?.data?.message || "Failed to block user");
     } finally {
       setIsBlocking(false);
     }
@@ -81,7 +78,7 @@ function Message({ mobileWidth }) {
       }
       toast.success(response.data.message);
     } catch (error) {
-      console.error("Error creating group:", error);
+      toast.error(error.response?.data?.message || "Failed to create group");
     } finally {
       setIsCreatingGroup(false);
     }

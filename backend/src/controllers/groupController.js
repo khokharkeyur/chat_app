@@ -237,6 +237,71 @@ export const addMembersToGroup = async (req, res) => {
   }
 };
 
+export const changeGroupAdmin = async (req, res) => {
+  try {
+    const { groupId, newAdminId } = req.body;
+    const userId = req.id;
+
+    if (!groupId || !newAdminId) {
+      return res
+        .status(400)
+        .json({ message: "Group ID and new admin ID are required" });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (group.admin.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Only current group admin can change admin" });
+    }
+
+    if (group.admin.toString() === newAdminId.toString()) {
+      return res
+        .status(400)
+        .json({ message: "Selected user is already group admin" });
+    }
+
+    const isNewAdminMember = group.members.some(
+      (member) => member.toString() === newAdminId.toString(),
+    );
+
+    if (!isNewAdminMember) {
+      return res
+        .status(400)
+        .json({ message: "New admin must be a member of this group" });
+    }
+
+    group.admin = newAdminId;
+    await group.save();
+
+    const populatedGroup = await Group.findById(groupId).populate({
+      path: "members",
+      select: "-password -blockedUsers -__v",
+    });
+
+    populatedGroup.members.forEach((member) => {
+      const memberSocketId = getReceiverSocketId(member._id.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("groupUpdated", {
+          groupId,
+          updatedGroup: populatedGroup,
+        });
+      }
+    });
+
+    return res.status(200).json({
+      message: "Group admin changed successfully",
+      group: populatedGroup,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const getAllGroups = async (req, res) => {
   try {
     const userId = req.id;
