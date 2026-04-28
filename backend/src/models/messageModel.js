@@ -25,8 +25,31 @@ const messageModel = new mongoose.Schema(
     },
     message: {
       type: String,
-      required: true,
+      required: false,
     },
+    messageType: {
+      type: String,
+      enum: ["text", "media", "mixed"],
+      default: "text",
+    },
+    media: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        type: {
+          type: String,
+          enum: ["image", "video", "file"],
+          required: true,
+        },
+        originalName: String,
+        size: Number,
+        mimeType: String,
+        cloudinaryId: String,
+        duration: Number,
+      },
+    ],
   },
   { timestamps: true },
 );

@@ -22,6 +22,7 @@ const CommanGroupModal = ({
   const [deleteGroupLoading, setDeleteGroupLoading] = useState(false);
   const [removeMemberLoading, setRemoveMemberLoading] = useState(false);
   const [addMembersLoading, setAddMembersLoading] = useState(false);
+  const [changeAdminLoading, setChangeAdminLoading] = useState(false);
 
   const deleteGroup = async (groupId) => {
     if (!groupId) return;
@@ -90,6 +91,27 @@ const CommanGroupModal = ({
     }
   };
 
+  const changeGroupAdmin = async (groupId, newAdminId) => {
+    if (!groupId || !newAdminId) return;
+    setChangeAdminLoading(true);
+
+    try {
+      const response = await axiosInterceptors.patch("/group/change-admin", {
+        groupId,
+        newAdminId,
+      });
+      toast.success(
+        response.data.message || "Group admin changed successfully",
+      );
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to change group admin";
+      toast.error(errorMessage);
+    } finally {
+      setChangeAdminLoading(false);
+    }
+  };
+
   const userclick = (user) => {
     setGroupMember((prevGroupMember) => {
       if (prevGroupMember.some((member) => member._id === user._id)) {
@@ -146,20 +168,30 @@ const CommanGroupModal = ({
                       {member?._id === GroupMemberIsAuthUser?._id
                         ? "You"
                         : member?.fullName}
+                      {selectedUser?.admin === member?._id ? " (Admin)" : ""}
                     </p>
                   </div>
                   {selectedUser?.admin === authUser?._id ? (
-                    <button
-                      className={`btn ${
-                        selectedUser?.admin === authUser?._id ? "" : "hidden"
-                      } ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
-                      disabled={removeMemberLoading}
-                      onClick={() =>
-                        removeMemberFromGroup(selectedUser?._id, member._id)
-                      }
-                    >
-                      Remove Member
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        className={`btn ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
+                        disabled={changeAdminLoading}
+                        onClick={() =>
+                          changeGroupAdmin(selectedUser?._id, member._id)
+                        }
+                      >
+                        Make Admin
+                      </button>
+                      <button
+                        className={`btn ${selectedUser?.admin === member?._id ? "hidden" : ""}`}
+                        disabled={removeMemberLoading}
+                        onClick={() =>
+                          removeMemberFromGroup(selectedUser?._id, member._id)
+                        }
+                      >
+                        Remove Member
+                      </button>
+                    </div>
                   ) : (
                     <button
                       className={`btn ${

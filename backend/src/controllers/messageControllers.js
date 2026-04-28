@@ -11,15 +11,36 @@ import {
   getConversationMessagesAgg,
   getMessageWithEmojisAgg,
 } from "../aggregations/messageAggregations.js";
+import { uploadMultipleFiles, deleteMediaFiles } from "../utils/fileUpload.js";
+
+export const uploadFiles = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files provided" });
+    }
+
+    const uploadedFiles = await uploadMultipleFiles(req.files);
+    return res.status(200).json({ files: uploadedFiles });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || "File upload failed" });
+  }
+};
 
 export const sendMessage = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
-    const { message, type } = req.body;
+    const { message, type, media } = req.body;
 
-    if (!message || message.trim() === "") {
-      return res.status(400).json({ error: "Message is required" });
+    // Validate that message has either text or media
+    if ((!message || message.trim() === "") && (!media || media.length === 0)) {
+      return res.status(400).json({ error: "Message text or media files are required" });
+    }
+
+    // Determine message type
+    let messageType = "text";
+    if (media && media.length > 0) {
+      messageType = message && message.trim() ? "mixed" : "media";
     }
 
     const isGroupMessage = type === "group";
@@ -55,7 +76,9 @@ export const sendMessage = async (req, res) => {
         conversationId: gotConversation._id,
         receiverId,
         receiverModel: "Group",
-        message,
+        message: message || null,
+        media: media || [],
+        messageType,
       });
 
       const lastMessage = await getLastMessageForGroup(receiverId);
@@ -95,7 +118,9 @@ export const sendMessage = async (req, res) => {
         senderId,
         receiverId,
         receiverModel: "User",
-        message,
+        message: message || null,
+        media: media || [],
+        messageType,
       });
 
       gotConversation.lastMessage = newMessage._id;
@@ -206,6 +231,11 @@ export const deleteMessage = async (req, res) => {
       return res
         .status(403)
         .json({ error: "You are not authorized to delete this message" });
+    }
+
+    // Delete media files from Cloudinary
+    if (message.media && message.media.length > 0) {
+      await deleteMediaFiles(message.media);
     }
 
     await Emoji.deleteMany({ messageId });
