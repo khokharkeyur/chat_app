@@ -6,6 +6,7 @@ import { setEditMessage } from "../../../../redux/messageSlice";
 import Picker from "emoji-picker-react";
 import axiosInterceptors from "../../axiosInterceptors";
 import EmojiReactions from "./EmojiReactions";
+import { AiOutlineFile, AiOutlineDownload } from "react-icons/ai";
 
 function InnerMessage({ message, onDelete }) {
   const chatRef = useRef();
@@ -88,6 +89,91 @@ function InnerMessage({ message, onDelete }) {
       // Remove reaction failed
     }
   };
+
+  const handleDownloadFile = async (media) => {
+    try {
+      const response = await fetch(media.url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = media.originalName || "download";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      window.open(media.url, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const renderMedia = (mediaArray) => {
+    if (!mediaArray || mediaArray.length === 0) return null;
+
+    return (
+      <div className="mt-2 space-y-2">
+        {mediaArray.map((media, idx) => (
+          <div key={idx} className="max-w-sm">
+            {media.type === "image" && (
+              <img
+                src={media.url}
+                alt="message-media"
+                className="max-w-full max-h-64 rounded-2xl cursor-pointer border border-white/20 shadow-sm hover:opacity-95 transition-opacity"
+                onClick={() => window.open(media.url, "_blank")}
+              />
+            )}
+            {media.type === "video" && (
+              <video
+                src={media.url}
+                controls
+                className="max-w-full max-h-64 rounded-2xl bg-black border border-white/20 shadow-sm"
+              />
+            )}
+            {media.type === "file" && (
+              <div
+                className={`flex items-center gap-3 p-3 rounded-2xl border shadow-sm transition-colors ${
+                  message?.senderId === authUser?._id
+                    ? "bg-[#cecece] border-[#cecece] text-slate-900"
+                    : "bg-gray-800 border-slate-200 text-slate-100"
+                }`}
+              >
+                <AiOutlineFile className="text-2xl flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">
+                    {media.originalName}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {(media.size / 1024 / 1024).toFixed(2)}MB
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(media.url, "_blank", "noopener,noreferrer")
+                    }
+                    className="flex-shrink-0 p-2 rounded-full hover:bg-black/5"
+                    title="Open file"
+                  >
+                    <span className="text-[11px] font-semibold">Open</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadFile(media)}
+                    className="flex-shrink-0 p-2 rounded-full hover:bg-black/5"
+                    title="Download file"
+                  >
+                    <AiOutlineDownload className="text-xl" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const open = Boolean(anchorEl);
   const id = open ? "message-popup" : undefined;
 
@@ -118,15 +204,23 @@ function InnerMessage({ message, onDelete }) {
       </div>
       <div
         className={`chat-bubble group relative pr-8 py-2 px-4 rounded-lg text-left ${
-          message?.senderId !== authUser?._id ? "bg-gray-200 text-black" : ""
+          message?.senderId !== authUser?._id ? "bg-gray-300 text-black" : ""
         } ${isEditing ? "border-2 border-blue-500 shadow-lg" : ""}`}
       >
-        {message?.message}
-        {isEditing && (
-          <span className="text-xs text-blue-500 font-semibold">
-            (Editing...)
-          </span>
+        {message?.message && (
+          <>
+            {message.message}
+            {isEditing && (
+              <span className="text-xs text-blue-500 font-semibold">
+                (Editing...)
+              </span>
+            )}
+          </>
         )}
+
+        {/* Render Media */}
+        {renderMedia(message?.media)}
+
         <span
           className="w-5 h-5 ml-2 opacity-0 cursor-pointer transition-opacity duration-200 group-hover:opacity-100 absolute right-0 top-4 transform -translate-y-1/2 text-xs"
           onClick={handleClick}
