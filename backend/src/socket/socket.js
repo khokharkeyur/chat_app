@@ -72,6 +72,90 @@ io.on("connection", (socket) => {
     // User joined group
   });
 
+  socket.on("typing:start", (payload) => {
+    const {
+      chatId,
+      isGroup,
+      receiverId,
+      memberIds = [],
+      senderId,
+      senderName,
+    } = payload || {};
+
+    if (!chatId || !senderId) return;
+
+    const typingPayload = {
+      chatId,
+      isGroup: !!isGroup,
+      senderId,
+      senderName,
+      isTyping: true,
+    };
+
+    if (isGroup) {
+      memberIds
+        .filter(
+          (memberId) => memberId && memberId.toString() !== senderId.toString(),
+        )
+        .forEach((memberId) => {
+          const receiverSocketId = getReceiverSocketId(memberId.toString());
+          if (receiverSocketId) {
+            io.to(receiverSocketId).emit("typingStatus", typingPayload);
+          }
+        });
+      return;
+    }
+
+    if (receiverId) {
+      const receiverSocketId = getReceiverSocketId(receiverId.toString());
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("typingStatus", typingPayload);
+      }
+    }
+  });
+
+  socket.on("typing:stop", (payload) => {
+    const {
+      chatId,
+      isGroup,
+      receiverId,
+      memberIds = [],
+      senderId,
+      senderName,
+    } = payload || {};
+
+    if (!chatId || !senderId) return;
+
+    const typingPayload = {
+      chatId,
+      isGroup: !!isGroup,
+      senderId,
+      senderName,
+      isTyping: false,
+    };
+
+    if (isGroup) {
+      memberIds
+        .filter(
+          (memberId) => memberId && memberId.toString() !== senderId.toString(),
+        )
+        .forEach((memberId) => {
+          const receiverSocketId = getReceiverSocketId(memberId.toString());
+          if (receiverSocketId) {
+            io.to(receiverSocketId).emit("typingStatus", typingPayload);
+          }
+        });
+      return;
+    }
+
+    if (receiverId) {
+      const receiverSocketId = getReceiverSocketId(receiverId.toString());
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("typingStatus", typingPayload);
+      }
+    }
+  });
+
   socket.on("disconnect", () => {
     delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
