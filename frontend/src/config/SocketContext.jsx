@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setOnlineUsers } from "../redux/userSlice";
+import { setOnlineUsers, clearAllTypingIndicators } from "../redux/userSlice";
 import { socket } from "../services/socket";
 
 const SocketContext = createContext(null);
@@ -14,6 +14,7 @@ export const SocketProvider = ({ children }) => {
 
     socket.auth = { userId: authUser._id };
     socket.connect();
+    dispatch(clearAllTypingIndicators());
 
     socket.on("getOnlineUsers", (users) => {
       dispatch(setOnlineUsers(users));
@@ -22,6 +23,7 @@ export const SocketProvider = ({ children }) => {
     return () => {
       socket.off("getOnlineUsers");
       socket.disconnect();
+      dispatch(clearAllTypingIndicators());
     };
   }, [authUser]);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { IoSend } from "react-icons/io5";
 import { GrAttachment } from "react-icons/gr";
 import { MdClose } from "react-icons/md";
@@ -8,9 +8,7 @@ import {
   setEditMessage,
   setMessages,
   addUploadingFile,
-  updateUploadingFile,
   removeUploadingFile,
-  clearUploadingFiles,
 } from "../../../../redux/messageSlice";
 import { useSocket } from "../../../../config/SocketContext";
 import toast from "react-hot-toast";
@@ -21,11 +19,11 @@ function SendInput({ mobileWidth }) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
   const dispatch = useDispatch();
-  const { selectedUser } = useSelector((store) => store.user);
-  const { messages, editMessage, uploadingFiles } = useSelector(
-    (store) => store.message,
-  );
+  const { selectedUser, authUser } = useSelector((store) => store.user);
+  const { messages, editMessage } = useSelector((store) => store.message);
   const socket = useSocket();
 
   const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
@@ -59,6 +57,70 @@ function SendInput({ mobileWidth }) {
   }, [message, selectedFiles, dispatch]);
 
   const isGroup = selectedUser?.members;
+
+  const getTypingPayload = useCallback(() => {
+    if (!selectedUser?._id || !authUser?._id) return null;
+
+    const senderName =
+      authUser?.fullName || authUser?.name || authUser?.username;
+    if (isGroup) {
+      const memberIds = (selectedUser?.members || []).map((member) =>
+        typeof member === "string" ? member : member?._id,
+      );
+      return {
+        chatId: selectedUser._id,
+        isGroup: true,
+        senderId: authUser._id,
+        senderName,
+        memberIds,
+      };
+    }
+
+    return {
+      chatId: selectedUser._id,
+      isGroup: false,
+      senderId: authUser._id,
+      senderName,
+      receiverId: selectedUser._id,
+    };
+  }, [selectedUser, authUser, isGroup]);
+
+  const emitStopTyping = useCallback(() => {
+    if (!isTypingRef.current || !socket) return;
+    const payload = getTypingPayload();
+    if (!payload) return;
+
+    socket.emit("typing:stop", payload);
+    isTypingRef.current = false;
+  }, [socket, getTypingPayload]);
+
+  const emitStartTyping = useCallback(() => {
+    if (isTypingRef.current || !socket) return;
+    const payload = getTypingPayload();
+    if (!payload) return;
+
+    socket.emit("typing:start", payload);
+    isTypingRef.current = true;
+  }, [socket, getTypingPayload]);
+
+  const resetTypingTimer = useCallback(() => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      emitStopTyping();
+    }, 1200);
+  }, [emitStopTyping]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      emitStopTyping();
+    };
+  }, [selectedUser?._id, authUser?._id, socket, emitStopTyping]);
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
@@ -147,6 +209,8 @@ function SendInput({ mobileWidth }) {
     }
 
     try {
+      emitStopTyping();
+
       let uploadedMedia = [];
 
       // Upload files if selected
@@ -192,7 +256,6 @@ function SendInput({ mobileWidth }) {
       setMessage("");
       setSelectedFiles([]);
       setUploadProgress(0);
-      toast.success("Message sent successfully");
     } catch (error) {
       console.error("Send message error:", error);
       toast.error(error.response?.data?.error || "Failed to send message");
@@ -288,7 +351,23 @@ function SendInput({ mobileWidth }) {
           <div className="border text-sm rounded-lg block w-full p-3 border-zinc-500 bg-gray-600 text-white">
             <input
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                const nextValue = e.target.value;
+                setMessage(nextValue);
+
+                if (!nextValue.trim()) {
+                  emitStopTyping();
+                  if (typingTimeoutRef.current) {
+                    clearTimeout(typingTimeoutRef.current);
+                    typingTimeoutRef.current = null;
+                  }
+                  return;
+                }
+
+                emitStartTyping();
+                resetTypingTimer();
+              }}
+              onBlur={emitStopTyping}
               type="text"
               placeholder="Send a message..."
               className={`${

@@ -19,6 +19,7 @@ function Message({ mobileWidth }) {
   const { selectedUser, authUser, otherUsers } = useSelector(
     (store) => store.user,
   );
+  const typingIndicators = useSelector((store) => store.user.typingIndicators);
   useGetOtherUsers();
   const [groupMember, setGroupMember] = React.useState([]);
   const [groupName, setGroupName] = React.useState("");
@@ -26,6 +27,18 @@ function Message({ mobileWidth }) {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
   const authUserId = authUser?._id;
+  const activeTyping = selectedUser?._id
+    ? typingIndicators?.[selectedUser._id]?.users || []
+    : [];
+
+  const typingText =
+    selectedUser?.members && activeTyping.length > 0
+      ? activeTyping.length === 1
+        ? `${activeTyping[0].userName} is typing...`
+        : `${activeTyping.length} people are typing...`
+      : activeTyping.length > 0
+        ? "typing..."
+        : "";
 
   const dispatch = useDispatch();
   const handleBlockUser = async (userId) => {
@@ -119,7 +132,12 @@ function Message({ mobileWidth }) {
                     className="w-12 h-12 rounded-full"
                   />
                 </div>
-                <p>{selectedUser?.fullName || selectedUser?.name}</p>
+                <div className="flex flex-col items-start">
+                  <p>{selectedUser?.fullName || selectedUser?.name}</p>
+                  {typingText && (
+                    <span className="text-xs text-[#25d366]">{typingText}</span>
+                  )}
+                </div>
               </button>
             </div>
             <div className="flex flex-col flex-1">

@@ -8,9 +8,23 @@ function OtherUser({ user }) {
   const { width } = useWindowSize();
   const dispatch = useDispatch();
 
-  const { selectedUser, onlineUsers } = useSelector((store) => store.user);
+  const { selectedUser, onlineUsers, typingIndicators } = useSelector(
+    (store) => store.user,
+  );
 
   const isOnline = onlineUsers?.includes(user._id);
+  const activeTyping = typingIndicators?.[user._id]?.users || [];
+  const isGroup = Array.isArray(user?.members);
+
+  const typingText = isGroup
+    ? activeTyping.length === 1
+      ? `${activeTyping[0].userName} is typing...`
+      : activeTyping.length > 1
+        ? `${activeTyping.length} people are typing...`
+        : ""
+    : activeTyping.length > 0
+      ? "typing..."
+      : "";
 
   const selectedUserHandler = (user) => {
     dispatch(setSelectedUser(user));
@@ -32,7 +46,9 @@ function OtherUser({ user }) {
             <p>{user?.fullName || user?.name}</p>
           </div>
           <div className="flex gap-2 flex-1 text-[12px]">
-            <p>{getLastMessage(user?.lastMessage?.message, width)}</p>
+            <p className={typingText ? "text-[#25d366]" : ""}>
+              {typingText || getLastMessage(user?.lastMessage?.message, width)}
+            </p>
           </div>
         </div>
       </div>
