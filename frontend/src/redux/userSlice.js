@@ -9,6 +9,7 @@ const userSlice = createSlice({
     selectedUser: null,
     // searchUser: [],
     onlineUsers: null,
+    typingIndicators: {},
   },
   reducers: {
     setAuthUser: (state, action) => {
@@ -28,6 +29,53 @@ const userSlice = createSlice({
     },
     setOnlineUsers: (state, action) => {
       state.onlineUsers = action.payload;
+    },
+    setTypingIndicator: (state, action) => {
+      const { chatId, isGroup, userId, userName } = action.payload;
+      if (!chatId || !userId) return;
+
+      const existing = state.typingIndicators[chatId] || {
+        isGroup: !!isGroup,
+        users: [],
+      };
+
+      const alreadyTyping = existing.users.some(
+        (user) => user.userId === userId,
+      );
+      const nextUsers = alreadyTyping
+        ? existing.users.map((user) =>
+            user.userId === userId
+              ? { ...user, userName: userName || user.userName }
+              : user,
+          )
+        : [...existing.users, { userId, userName: userName || "Someone" }];
+
+      state.typingIndicators[chatId] = {
+        isGroup: !!isGroup,
+        users: nextUsers,
+      };
+    },
+    clearTypingIndicator: (state, action) => {
+      const { chatId, userId } = action.payload;
+      if (!chatId || !state.typingIndicators[chatId]) return;
+
+      if (!userId) {
+        delete state.typingIndicators[chatId];
+        return;
+      }
+
+      const remainingUsers = state.typingIndicators[chatId].users.filter(
+        (user) => user.userId !== userId,
+      );
+
+      if (remainingUsers.length === 0) {
+        delete state.typingIndicators[chatId];
+      } else {
+        state.typingIndicators[chatId].users = remainingUsers;
+      }
+    },
+    clearAllTypingIndicators: (state) => {
+      state.typingIndicators = {};
     },
     updateUserLastMessage: (state, action) => {
       const { userId, lastMessage } = action.payload;
@@ -63,6 +111,9 @@ export const {
   setSelectedUser,
   setOnlineUsers,
   setGroups,
+  setTypingIndicator,
+  clearTypingIndicator,
+  clearAllTypingIndicators,
   updateSelectedUser,
   removeGroup,
   removeOtherUser,

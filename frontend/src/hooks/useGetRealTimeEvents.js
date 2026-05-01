@@ -8,6 +8,8 @@ import {
   updateUserLastMessage,
   updateGroupLastMessage,
   setSelectedUser,
+  setTypingIndicator,
+  clearTypingIndicator,
 } from "../redux/userSlice";
 import { useSocket } from "../config/SocketContext";
 
@@ -18,6 +20,7 @@ const useGetRealTimeEvents = () => {
 
   const groupsRef = useRef(groups || []);
   const selectedUserRef = useRef(selectedUser);
+  const typingTimeoutRef = useRef({});
 
   useEffect(() => {
     groupsRef.current = groups || [];
@@ -37,6 +40,12 @@ const useGetRealTimeEvents = () => {
           currentSelectedUser._id === newMessage.groupId
         ) {
           dispatch(setMessages((prev) => [...(prev || []), newMessage]));
+          dispatch(
+            clearTypingIndicator({
+              chatId: newMessage.groupId,
+              userId: newMessage.senderId,
+            }),
+          );
         } else if (
           newMessage.type === "user" &&
           currentSelectedUser &&
@@ -44,7 +53,58 @@ const useGetRealTimeEvents = () => {
             currentSelectedUser._id === newMessage.receiverId)
         ) {
           dispatch(setMessages((prev) => [...(prev || []), newMessage]));
+          dispatch(
+            clearTypingIndicator({
+              chatId:
+                newMessage.senderId === currentSelectedUser._id
+                  ? newMessage.senderId
+                  : newMessage.receiverId,
+              userId: newMessage.senderId,
+            }),
+          );
         }
+      });
+
+      socket.on("typingStatus", ({
+        chatId,
+        isGroup,
+        senderId,
+        senderName,
+        isTyping,
+      }) => {
+        if (!chatId || !senderId) return;
+
+        const targetChatId = isGroup ? chatId : senderId;
+
+        const timeoutKey = `${targetChatId}:${senderId}`;
+        const existingTimeout = typingTimeoutRef.current[timeoutKey];
+        if (existingTimeout) {
+          clearTimeout(existingTimeout);
+          delete typingTimeoutRef.current[timeoutKey];
+        }
+
+        if (isTyping) {
+          dispatch(
+            setTypingIndicator({
+              chatId: targetChatId,
+              isGroup,
+              userId: senderId,
+              userName: senderName,
+            }),
+          );
+
+          typingTimeoutRef.current[timeoutKey] = setTimeout(() => {
+            dispatch(
+              clearTypingIndicator({ chatId: targetChatId, userId: senderId }),
+            );
+            delete typingTimeoutRef.current[timeoutKey];
+          }, 3000);
+          return;
+        }
+
+        dispatch(
+          clearTypingIndicator({ chatId: targetChatId, userId: senderId }),
+        );
       });
 
       socket.on("messageUpdated", (updatedMessage) => {
@@ -154,6 +214,12 @@ const useGetRealTimeEvents = () => {
       socket?.off("memberAdded");
       socket?.off("groupUpdated");
       socket?.off("lastMessageUpdated");
+      socket?.off("typingStatus");
+
+      Object.values(typingTimeoutRef.current).forEach((timeoutId) =>
+        clearTimeout(timeoutId),
+      );
+      typingTimeoutRef.current = {};
     };
   }, [socket, dispatch]);
 
