@@ -13,6 +13,17 @@ const client = new SMTPClient({
   ssl: true,
 });
 
+// Password strength validation regex
+const PASSWORD_STRENGTH_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+const validatePasswordStrength = (password) => {
+  if (!PASSWORD_STRENGTH_REGEX.test(password)) {
+    return "Password must be at least 8 characters and contain uppercase, lowercase, number, and special character";
+  }
+  return null;
+};
+
 export const register = async (req, res) => {
   try {
     const { fullName, username, password, confirmPassword, gender, email } =
@@ -30,6 +41,11 @@ export const register = async (req, res) => {
     }
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Password do not match" });
+    }
+
+    const passwordError = validatePasswordStrength(password);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -179,6 +195,11 @@ export const resetPassword = async (req, res) => {
 
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    const passwordError = validatePasswordStrength(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
     let user;
