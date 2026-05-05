@@ -51,8 +51,21 @@ export const createGroup = async (req, res) => {
 export const deleteGroup = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.id;
+
     if (!id) {
       return res.status(400).json({ message: "Group ID is required" });
+    }
+
+    const group = await Group.findById(id);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (group.admin.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Only group admin can delete the group" });
     }
 
     const deletedGroup = await Group.findByIdAndDelete(id);
