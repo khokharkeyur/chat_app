@@ -214,7 +214,10 @@ export const resetPassword = async (req, res) => {
       return res.status(404).json({ message: "User or OTP not found" });
     }
 
-    if (user.otpExpireAt < Date.now()) {
+    if (!user.otpExpireAt || user.otpExpireAt.getTime() < Date.now()) {
+      user.otp = null;
+      user.otpExpireAt = null;
+      await user.save();
       return res.status(400).json({ message: "OTP expired" });
     }
 
@@ -496,7 +499,7 @@ export const sendOtp = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     user.otp = otp;
-    user.otpExpireAt = Date.now() + 5 * 60 * 1000;
+    user.otpExpireAt = new Date(Date.now() + 5 * 60 * 1000);
 
     await user.save();
     const message = {
@@ -536,7 +539,10 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "OTP not found" });
     }
 
-    if (user.otpExpireAt < Date.now()) {
+    if (!user.otpExpireAt || user.otpExpireAt.getTime() < Date.now()) {
+      user.otp = null;
+      user.otpExpireAt = null;
+      await user.save();
       return res.status(400).json({ message: "OTP expired" });
     }
 

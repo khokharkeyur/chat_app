@@ -252,9 +252,10 @@ function SignupForm() {
               <div>
                 <button
                   type="submit"
-                  className="btn btn-block btn-sm mt-2 border border-slate-700"
+                  disabled={loading}
+                  className="btn btn-block btn-sm mt-2 border border-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Signup
+                  {loading ? "Signing up..." : "Signup"}
                 </button>
               </div>
             </Form>
