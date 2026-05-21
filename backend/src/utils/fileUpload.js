@@ -1,4 +1,7 @@
-import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.config.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../config/cloudinary.config.js";
 
 const MIME_TYPE_MAP = {
   "image/jpeg": "image",
@@ -10,7 +13,8 @@ const MIME_TYPE_MAP = {
   "video/quicktime": "video",
   "application/pdf": "file",
   "application/msword": "file",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "file",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    "file",
   "application/vnd.ms-excel": "file",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "file",
   "application/zip": "file",
@@ -23,9 +27,14 @@ export const uploadFileToCloudinary = async (file) => {
 
   try {
     const mediaType = MIME_TYPE_MAP[file.mimetype] || "file";
-    const resourceType = mediaType === "image" ? "image" : mediaType === "video" ? "video" : "raw";
+    const resourceType =
+      mediaType === "image" ? "image" : mediaType === "video" ? "video" : "raw";
 
-    const result = await uploadToCloudinary(file.buffer, file.originalname, resourceType);
+    const result = await uploadToCloudinary(
+      file.buffer,
+      file.originalname,
+      resourceType,
+    );
 
     return {
       url: result.secure_url,
@@ -57,11 +66,13 @@ export const deleteMediaFiles = async (mediaArray) => {
     return;
   }
 
-  const deletePromises = mediaArray.map((media) => {
-    if (media.cloudinaryId) {
-      return deleteFromCloudinary(media.cloudinaryId);
-    }
-  });
+  const deletePromises = mediaArray
+    .map((media) =>
+      media.cloudinaryId ? deleteFromCloudinary(media.cloudinaryId) : null,
+    )
+    .filter(Boolean);
 
-  await Promise.all(deletePromises);
+  if (deletePromises.length > 0) {
+    await Promise.all(deletePromises);
+  }
 };

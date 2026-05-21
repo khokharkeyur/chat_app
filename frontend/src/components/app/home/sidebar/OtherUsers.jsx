@@ -10,9 +10,10 @@ function OtherUsers({ filteredGroups, filteredUsers }) {
       {filteredUsers?.map((user) => (
         <OtherUser key={user._id} user={user} />
       ))}
-      {filteredGroups?.length == 0 && filteredUsers?.length === 0 && (
-        <div className="text-center text-gray-500">No other users found.</div>
-      )}
+      {(filteredGroups?.length || 0) === 0 &&
+        (filteredUsers?.length || 0) === 0 && (
+          <div className="text-center text-gray-500">No other users found.</div>
+        )}
     </div>
   );
 }

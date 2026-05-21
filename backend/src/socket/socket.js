@@ -12,11 +12,9 @@ const io = new Server(server, {
   },
 });
 
-export const getReceiverSocketId = (receiverId) => {
-  return userSocketMap[receiverId];
-};
-
 const userSocketMap = {};
+
+export const getReceiverSocketId = (receiverId) => userSocketMap[receiverId];
 
 io.on("connection", (socket) => {
   const userId = socket.handshake.auth.userId;
@@ -62,7 +60,7 @@ io.on("connection", (socket) => {
           io.emit("messageUpdated", updatedMessage);
         }
       } catch (error) {
-        // Error updating message
+        console.error("Error updating message:", error);
       }
     },
   );
