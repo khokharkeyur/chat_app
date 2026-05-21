@@ -22,7 +22,7 @@ db.on("error", (error) => {
 });
 
 db.once("open", () => {
-  console.log("Connected to MongoDB");
+  console.info("Connected to MongoDB");
   setupRoutes(app);
 });
 
@@ -37,5 +37,5 @@ app.use(express.json());
 app.use(cookieParser());
 
 server.listen(PORT, () => {
-  console.log(`Server Start at port ${PORT}`);
+  console.info(`Server Start at port ${PORT}`);
 });
