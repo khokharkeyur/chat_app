@@ -97,7 +97,7 @@ export const register = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log("error :", error);
+    console.error("Register error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -278,7 +278,7 @@ export const login = async (req, res) => {
     await user.save();
 
     return res.status(200).json({
-      token,
+      accessToken: token,
       refreshToken,
       _id: user._id,
       username: user.username,
