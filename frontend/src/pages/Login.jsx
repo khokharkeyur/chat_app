@@ -33,8 +33,8 @@ const Login = () => {
     let success = false;
     try {
       const res = await axiosInterceptors.post("/user/login", values);
-      const { token, refreshToken, ...userData } = res.data;
-      Cookies.set("AccessToken", token, { expires: 1, path: "/" });
+      const { accessToken, refreshToken, ...userData } = res.data;
+      Cookies.set("AccessToken", accessToken, { expires: 1, path: "/" });
       Cookies.set("RefreshToken", refreshToken, { expires: 7, path: "/" });
       dispatch(setAuthUser(userData));
       navigate("/");
