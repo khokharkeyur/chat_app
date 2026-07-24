@@ -9,9 +9,9 @@ import { setupRoutes } from "./src/routes/index.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8080;
 
-const url = process.env.MONGODB_URI;
+const url = process.env.MONGODB_URI || "mongodb://localhost:27017/chatapp";
 
 // Connect to MongoDB
 mongoose.connect(url);
@@ -27,7 +27,7 @@ db.once("open", () => {
 });
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: process.env.CORS_ORIGIN || "http://localhost:3000",
   credentials: true,
 };
 
