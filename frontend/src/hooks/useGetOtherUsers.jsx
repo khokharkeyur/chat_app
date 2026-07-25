@@ -14,12 +14,13 @@ function useGetOtherUsers() {
         dispatch(setOtherUsers(res.data));
         setData(res.data);
       } catch (error) {
+        console.error("Error fetching other users:", error);
         dispatch(setOtherUsers([]));
         setData([]);
       }
     };
     fetchOtherUser();
-  }, []);
+  }, [dispatch]);
 
   return { data };
 }

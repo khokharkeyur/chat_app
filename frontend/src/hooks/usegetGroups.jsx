@@ -14,13 +14,14 @@ function useGetGroups() {
         dispatch(setGroups(res?.data?.groups));
         setData(res.data?.groups);
       } catch (error) {
+        console.error("Error fetching groups:", error);
         dispatch(setGroups([]));
         setData([]);
       }
     };
 
     fetchGroups();
-  }, []);
+  }, [dispatch]);
   return { data };
 }
 
