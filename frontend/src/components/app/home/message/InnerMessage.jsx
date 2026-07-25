@@ -57,7 +57,7 @@ function InnerMessage({ message, onDelete }) {
     try {
       await onDelete(message._id);
     } catch (error) {
-      // Delete message failed
+      console.error("Error deleting message:", error);
     }
   };
   const handleEmoji = (messageId) => {
@@ -68,10 +68,14 @@ function InnerMessage({ message, onDelete }) {
   const handleReaction = async (emojiData) => {
     const emoji = emojiData.emoji;
     if (emoji && emojiTargetId) {
-      await axiosInterceptors.put(`/message/edit/${emojiTargetId}`, {
-        emoji: emoji,
-        emojiSender: authUser._id,
-      });
+      try {
+        await axiosInterceptors.put(`/message/edit/${emojiTargetId}`, {
+          emoji: emoji,
+          emojiSender: authUser._id,
+        });
+      } catch (error) {
+        console.error("Error adding reaction:", error);
+      }
     }
 
     setShowEmojiPicker(false);
@@ -86,7 +90,7 @@ function InnerMessage({ message, onDelete }) {
         removeEmoji: true,
       });
     } catch (error) {
-      // Remove reaction failed
+      console.error("Error removing reaction:", error);
     }
   };
 
@@ -103,6 +107,7 @@ function InnerMessage({ message, onDelete }) {
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
+      console.warn("Download failed, opening in new tab:", error);
       window.open(media.url, "_blank", "noopener,noreferrer");
     }
   };

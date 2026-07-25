@@ -21,6 +21,7 @@ const useGetMessages = () => {
         const res = await axiosInterceptors.get(endpoint);
         dispatch(setMessages(res.data));
       } catch (error) {
+        console.error("Error fetching messages:", error);
         dispatch(setMessages([]));
       }
     };
