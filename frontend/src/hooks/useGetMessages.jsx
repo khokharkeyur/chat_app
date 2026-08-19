@@ -6,17 +6,17 @@ import { setMessages } from "../redux/messageSlice";
 const useGetMessages = () => {
   const { selectedUser } = useSelector((store) => store.user);
   const dispatch = useDispatch();
+  const selectedUserId = selectedUser?._id;
+  const selectedUserIsGroup = !!selectedUser?.members;
 
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!selectedUser?._id) return;
+      if (!selectedUserId) return;
 
       try {
-        const isGroup = !!selectedUser.members;
-
-        const endpoint = isGroup
-          ? `/message/group/${selectedUser._id}`
-          : `/message/${selectedUser._id}`;
+        const endpoint = selectedUserIsGroup
+          ? `/message/group/${selectedUserId}`
+          : `/message/${selectedUserId}`;
 
         const res = await axiosInterceptors.get(endpoint);
         dispatch(setMessages(res.data));
@@ -27,7 +27,7 @@ const useGetMessages = () => {
     };
 
     fetchMessages();
-  }, [selectedUser?._id, dispatch]);
+  }, [selectedUserId, selectedUserIsGroup, dispatch]);
 };
 
 export default useGetMessages;
