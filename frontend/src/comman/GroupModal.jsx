@@ -340,8 +340,6 @@ const CommanGroupModal = ({
                     } else {
                       createGroup();
                     }
-                    setGroupMember([]);
-                    setIsAddMemberMode(false);
                   }}
                 >
                   {isAddMemberMode ? "Add Members" : "Create Group"}
