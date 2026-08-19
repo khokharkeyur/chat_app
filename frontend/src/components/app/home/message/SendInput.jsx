@@ -19,12 +19,25 @@ function SendInput({ mobileWidth }) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const selectedFilesRef = useRef([]);
   const typingTimeoutRef = useRef(null);
   const isTypingRef = useRef(false);
   const dispatch = useDispatch();
   const { selectedUser, authUser } = useSelector((store) => store.user);
-  const { messages, editMessage } = useSelector((store) => store.message);
+  const { editMessage } = useSelector((store) => store.message);
   const socket = useSocket();
+
+  useEffect(() => {
+    selectedFilesRef.current = selectedFiles;
+  }, [selectedFiles]);
+
+  useEffect(() => {
+    return () => {
+      selectedFilesRef.current.forEach(({ preview }) => {
+        if (preview) URL.revokeObjectURL(preview);
+      });
+    };
+  }, []);
 
   const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
   const ALLOWED_FILE_TYPES = [
@@ -149,7 +162,7 @@ function SendInput({ mobileWidth }) {
       });
     });
 
-    setSelectedFiles([...selectedFiles, ...newFiles]);
+    setSelectedFiles((currentFiles) => [...currentFiles, ...newFiles]);
 
     // Reset input
     if (fileInputRef.current) {
@@ -158,7 +171,13 @@ function SendInput({ mobileWidth }) {
   };
 
   const removeFile = (fileId) => {
-    setSelectedFiles(selectedFiles.filter((f) => f.id !== fileId));
+    const fileToRemove = selectedFiles.find((file) => file.id === fileId);
+    if (fileToRemove?.preview) {
+      URL.revokeObjectURL(fileToRemove.preview);
+    }
+    setSelectedFiles((currentFiles) =>
+      currentFiles.filter((file) => file.id !== fileId),
+    );
   };
 
   const uploadFiles = async () => {
@@ -231,8 +250,6 @@ function SendInput({ mobileWidth }) {
 
       if (editMessage) {
         // Can't edit messages with media, only text
-        socket.emit("editMessage", editMessage._id, message);
-
         await axiosInterceptors.put(`/message/edit/${editMessage._id}`, {
           message,
         });
@@ -249,11 +266,19 @@ function SendInput({ mobileWidth }) {
           payload,
         );
 
-        dispatch(setMessages([...messages, res?.data?.newMessage]));
+        dispatch(
+          setMessages((currentMessages) => [
+            ...(currentMessages || []),
+            res?.data?.newMessage,
+          ]),
+        );
       }
 
       // Clear inputs
       setMessage("");
+      selectedFiles.forEach(({ preview }) => {
+        if (preview) URL.revokeObjectURL(preview);
+      });
       setSelectedFiles([]);
       setUploadProgress(0);
     } catch (error) {
