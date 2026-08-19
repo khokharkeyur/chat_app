@@ -31,6 +31,15 @@ io.on("connection", (socket) => {
     "editMessage",
     async (messageId, newContent, emoji, emojiSender, removeEmoji) => {
       try {
+        const message = await Message.findById(messageId);
+        if (
+          !message ||
+          userId === undefined ||
+          message.senderId.toString() !== userId.toString()
+        ) {
+          return;
+        }
+
         let updatedMessage;
         if (removeEmoji && emoji && emojiSender) {
           await Message.findByIdAndUpdate(messageId, {

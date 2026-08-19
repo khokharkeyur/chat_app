@@ -22,7 +22,9 @@ export const uploadFiles = async (req, res) => {
     const uploadedFiles = await uploadMultipleFiles(req.files);
     return res.status(200).json({ files: uploadedFiles });
   } catch (error) {
-    return res.status(500).json({ error: error.message || "File upload failed" });
+    return res
+      .status(500)
+      .json({ error: error.message || "File upload failed" });
   }
 };
 
@@ -34,7 +36,9 @@ export const sendMessage = async (req, res) => {
 
     // Validate that message has either text or media
     if ((!message || message.trim() === "") && (!media || media.length === 0)) {
-      return res.status(400).json({ error: "Message text or media files are required" });
+      return res
+        .status(400)
+        .json({ error: "Message text or media files are required" });
     }
 
     // Determine message type
@@ -50,6 +54,17 @@ export const sendMessage = async (req, res) => {
 
     if (isGroupMessage && !isExistingGroup) {
       return res.status(404).json({ error: "Group not found" });
+    }
+
+    if (
+      isGroupMessage &&
+      !group.members.some(
+        (memberId) => memberId.toString() === senderId.toString(),
+      )
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You are not a member of this group" });
     }
 
     if (!isGroupMessage && isExistingGroup) {
@@ -296,6 +311,20 @@ export const editMessage = async (req, res) => {
     const senderId = req.id;
 
     const { message: newMessageContent, emoji, removeEmoji } = req.body;
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    if (
+      newMessageContent?.trim() &&
+      message.senderId.toString() !== senderId.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to edit this message" });
+    }
 
     // 1️⃣ REMOVE EMOJI
     if (removeEmoji && emoji) {
@@ -331,8 +360,6 @@ export const editMessage = async (req, res) => {
     }
 
     // 5️⃣ SOCKET LOGIC (UNCHANGED)
-    const message = await Message.findById(messageId);
-
     const conversation = await Conversation.findById(message.conversationId);
     const isGroup = conversation?.isGroup;
 

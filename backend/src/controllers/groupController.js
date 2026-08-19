@@ -5,25 +5,35 @@ import { getColorFromString } from "../utils/utils.js";
 
 export const createGroup = async (req, res) => {
   try {
-    const { groupName, memberIds, adminId } = req.body;
-    if (!groupName) {
+    const { groupName, memberIds } = req.body;
+    const requesterId = req.id.toString();
+    const requestedMemberIds = Array.isArray(memberIds)
+      ? memberIds.map((memberId) => memberId.toString())
+      : [];
+
+    if (!groupName?.trim()) {
       return res.status(400).json({ message: "Group name is required" });
     }
-    if (!memberIds || memberIds.length === 1) {
+    if (
+      requestedMemberIds.filter((memberId) => memberId !== requesterId)
+        .length === 0
+    ) {
       return res
         .status(400)
         .json({ message: "At least one member ID is required" });
     }
-    const existingGroup = await Group.findOne({ name: groupName });
+    const uniqueMemberIds = [...new Set([requesterId, ...requestedMemberIds])];
+    const existingGroup = await Group.findOne({ name: groupName.trim() });
     if (existingGroup) {
       return res.status(400).json({ message: "Group name already exists" });
     }
-    const avatarColor = getColorFromString(groupName);
-    const groupProfilePhoto = `https://ui-avatars.com/api/?name=${groupName}&background=${avatarColor}&color=ffffff`;
+    const normalizedGroupName = groupName.trim();
+    const avatarColor = getColorFromString(normalizedGroupName);
+    const groupProfilePhoto = `https://ui-avatars.com/api/?name=${encodeURIComponent(normalizedGroupName)}&background=${avatarColor}&color=ffffff`;
     const newGroup = await Group.create({
-      name: groupName,
-      members: memberIds,
-      admin: adminId,
+      name: normalizedGroupName,
+      members: uniqueMemberIds,
+      admin: requesterId,
       profilePhoto: groupProfilePhoto,
     });
 
@@ -32,7 +42,7 @@ export const createGroup = async (req, res) => {
       select: "-password -blockedUsers -__v",
     });
 
-    memberIds.forEach((memberId) => {
+    uniqueMemberIds.forEach((memberId) => {
       const memberSocketId = getReceiverSocketId(memberId.toString());
       if (memberSocketId) {
         io.to(memberSocketId).emit("groupCreated", populatedGroup);
